@@ -1,4 +1,3 @@
-
 from machine import Pin,SPI,PWM
 import framebuf
 import time
@@ -151,91 +150,119 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.cs(0)
         self.spi.write(self.buffer)
         self.cs(1)
-        
-  
-if __name__=='__main__':
-    pwm = PWM(Pin(BL))
-    pwm.freq(1000)
-    pwm.duty_u16(32768)#max 65535
 
-    LCD = LCD_1inch3()
-    #color BRG
-    LCD.fill(LCD.white)
-    LCD.show()
+    def colour(self, R,G,B): # Convert RGB888 to RGB565
+        """ 
+        Converts the 24-bit color format to the 16-bit color format supported by the display.
+        """
+        return (((G&0b00011100)<<3) +((R&0b11111000)>>3)<<8) + (B&0b11111000)+((G&0b11100000)>>5)
+    
+    def set_brightness(self, brightness:float):
+        """ 
+        Set the brightness of the display.
+        Arguments:
+             brightness (float): The brightness (in %) that the display should be set to.
+                Value of this argument should be between 0 and 100, otherwise it is automatically
+                set to 100 if the value is too large and to 1 if the value is too small.
+        """
+        try:
+            brightness = float(brightness)
+        except ValueError:
+            return(ValueError)
+        if brightness < 0.0:
+            brightness = 1.0
+        if brightness > 100.0:
+            brightness = 100.0
+
+
+
+        pwm = PWM(Pin(BL))
+        pwm.freq(1000)
+        pwm.duty_u16(min(int(65535*brightness/100), 65535)) # max 65535
+
+
+
+
+# ========== Unused old code for reference ========== 
+# if __name__=='__main__':
+#     pwm = PWM(Pin(BL))
+#     pwm.freq(1000)
+#     pwm.duty_u16(32768)#max 65535
+
+#     LCD = LCD_1inch3()
+#     #color BRG
+#     LCD.fill(LCD.white)
+#     LCD.show()
     
 
-    keyA = Pin(15,Pin.IN,Pin.PULL_UP)
-    keyB = Pin(17,Pin.IN,Pin.PULL_UP)
-    keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
-    keyY= Pin(21 ,Pin.IN,Pin.PULL_UP)
+#     keyA = Pin(15,Pin.IN,Pin.PULL_UP)
+#     keyB = Pin(17,Pin.IN,Pin.PULL_UP)
+#     keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
+#     keyY= Pin(21 ,Pin.IN,Pin.PULL_UP)
     
-    up = Pin(2,Pin.IN,Pin.PULL_UP)
-    dowm = Pin(18,Pin.IN,Pin.PULL_UP)
-    left = Pin(16,Pin.IN,Pin.PULL_UP)
-    right = Pin(20,Pin.IN,Pin.PULL_UP)
-    ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
+#     up = Pin(2,Pin.IN,Pin.PULL_UP)
+#     dowm = Pin(18,Pin.IN,Pin.PULL_UP)
+#     left = Pin(16,Pin.IN,Pin.PULL_UP)
+#     right = Pin(20,Pin.IN,Pin.PULL_UP)
+#     ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
     
-    while(1):
-        if keyA.value() == 0:
-            LCD.fill_rect(208,15,30,30,LCD.red)
-        else :
-            LCD.fill_rect(208,15,30,30,LCD.white)
-            LCD.rect(208,15,30,30,LCD.red)
+#     while(1):
+#         if keyA.value() == 0:
+#             LCD.fill_rect(208,15,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(208,15,30,30,LCD.white)
+#             LCD.rect(208,15,30,30,LCD.red)
             
             
-        if(keyB.value() == 0):
-            LCD.fill_rect(208,75,30,30,LCD.red)
-        else :
-            LCD.fill_rect(208,75,30,30,LCD.white)
-            LCD.rect(208,75,30,30,LCD.red)
+#         if(keyB.value() == 0):
+#             LCD.fill_rect(208,75,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(208,75,30,30,LCD.white)
+#             LCD.rect(208,75,30,30,LCD.red)
             
             
-        if(keyX.value() == 0):
-            LCD.fill_rect(208,135,30,30,LCD.red)
-        else :
-            LCD.fill_rect(208,135,30,30,LCD.white)
-            LCD.rect(208,135,30,30,LCD.red)
+#         if(keyX.value() == 0):
+#             LCD.fill_rect(208,135,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(208,135,30,30,LCD.white)
+#             LCD.rect(208,135,30,30,LCD.red)
             
-        if(keyY.value() == 0):
-            LCD.fill_rect(208,195,30,30,LCD.red)
-        else :
-            LCD.fill_rect(208,195,30,30,LCD.white)
-            LCD.rect(208,195,30,30,LCD.red)
+#         if(keyY.value() == 0):
+#             LCD.fill_rect(208,195,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(208,195,30,30,LCD.white)
+#             LCD.rect(208,195,30,30,LCD.red)
             
-        if(up.value() == 0):
-            LCD.fill_rect(60,60,30,30,LCD.red)
-        else :
-            LCD.fill_rect(60,60,30,30,LCD.white)
-            LCD.rect(60,60,30,30,LCD.red)
+#         if(up.value() == 0):
+#             LCD.fill_rect(60,60,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(60,60,30,30,LCD.white)
+#             LCD.rect(60,60,30,30,LCD.red)
             
-        if(dowm.value() == 0):
-            LCD.fill_rect(60,150,30,30,LCD.red)
-        else :
-            LCD.fill_rect(60,150,30,30,LCD.white)
-            LCD.rect(60,150,30,30,LCD.red)
+#         if(dowm.value() == 0):
+#             LCD.fill_rect(60,150,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(60,150,30,30,LCD.white)
+#             LCD.rect(60,150,30,30,LCD.red)
             
-        if(left.value() == 0):
-            LCD.fill_rect(15,105,30,30,LCD.red)
-        else :
-            LCD.fill_rect(15,105,30,30,LCD.white)
-            LCD.rect(15,105,30,30,LCD.red)
+#         if(left.value() == 0):
+#             LCD.fill_rect(15,105,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(15,105,30,30,LCD.white)
+#             LCD.rect(15,105,30,30,LCD.red)
         
-        if(right.value() == 0):
-            LCD.fill_rect(105,105,30,30,LCD.red)
-        else :
-            LCD.fill_rect(105,105,30,30,LCD.white)
-            LCD.rect(105,105,30,30,LCD.red)
+#         if(right.value() == 0):
+#             LCD.fill_rect(105,105,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(105,105,30,30,LCD.white)
+#             LCD.rect(105,105,30,30,LCD.red)
         
-        if(ctrl.value() == 0):
-            LCD.fill_rect(60,105,30,30,LCD.red)
-        else :
-            LCD.fill_rect(60,105,30,30,LCD.white)
-            LCD.rect(60,105,30,30,LCD.red)
+#         if(ctrl.value() == 0):
+#             LCD.fill_rect(60,105,30,30,LCD.red)
+#         else :
+#             LCD.fill_rect(60,105,30,30,LCD.white)
+#             LCD.rect(60,105,30,30,LCD.red)
                        
-        LCD.show()
-    time.sleep(1)
-    LCD.fill(0xFFFF)
-
-
-
-
+#         LCD.show()
+#     time.sleep(1)
+#     LCD.fill(0xFFFF)
