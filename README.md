@@ -12,3 +12,7 @@ I used this code largely unmodified or with some minor changes or feature additi
 - [Pico-UPS-A](https://www.waveshare.com/wiki/Pico-UPS-A#Demo_codes)
 - [Pico-LCD-1.3](https://www.waveshare.com/wiki/Pico-LCD-1.3#Demo_Download)
     - I also used a color conversion function written by Tony Goodhew for [thepihut.com](https://thepihut.com/blogs/raspberry-pi-tutorials/coding-colour-with-micropython-on-raspberry-pi-pico-displays)
+
+## Libraries used
+- [FONTS](https://thepihut.com/blogs/raspberry-pi-tutorials/advanced-text-with-micropython-on-raspberry-pi-pico-displays?)
+    - Again by Tony Goodhew for [thepihut.com](https://thepihut.com)
