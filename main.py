@@ -5,7 +5,7 @@ import gc
 import renderTools
 
 import display_driver
-# The display driver must contain a colour() function to convert 24-bit
+# The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.¨
 
 # Initialize the display
@@ -58,8 +58,8 @@ class main_menu():
             self.Tools.update_dynamic_background(0, backgroundColor, secondaryBackgroundColor)
 
             LCD.fill_rect(15,105,20 + len(title)*8,30, buttonBorderColor)
-            LCD.fill_rect(20,110,10 + len(title)*8,20, LCD.colour(90, 90, 90))
-            self.Tools.center_text(title, 25 + len(title)*4, 120, 0xFFFF, LCD.colour(90, 90, 90))
+            LCD.fill_rect(20,110,10 + len(title)*8,20, LCD.color(90, 90, 90))
+            self.Tools.center_text(title, 25 + len(title)*4, 120, 0xFFFF, LCD.color(90, 90, 90))
             
             self.Tools.center_y_text(f"Free RAM: {gc.mem_free()/1000} KB", 5, 5, 0x0000, 0xFFFF)
             self.Tools.center_y_text(f"Render time: {(time.time_ns() - startTime)/1000000} ms ", 5, 15, 0x0000, 0xFFFF)

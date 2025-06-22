@@ -223,7 +223,7 @@ class toolset():
                         width-borderThickness*2, height - 8 - borderThickness*3, backgroundColor)
         else:
             self.LCD.fill_rect(x + borderThickness, y + 8 + borderThickness*2,
-                        width-borderThickness*2, height - 8 - borderThickness*3, self.LCD.colour(255,0,0))
+                        width-borderThickness*2, height - 8 - borderThickness*3, self.LCD.color(255,0,0))
         
         self.center_x_text("Battery status:", int(x + width/2), y + borderThickness, titleColor)
 
@@ -233,7 +233,7 @@ class toolset():
         self.LCD.fill_rect(x + borderThickness + textShift, y + borderThickness*2 + 8 + 38,
                     width - textShift*2 - borderThickness*2, 4, 0x000)
         self.LCD.fill_rect(x + borderThickness + textShift + 2, y + borderThickness*2 + 8 + 39,
-                    int(int(P)/(100/(width - textShift*2 - borderThickness*2-4))), 2, self.LCD.colour(0,255,0))
+                    int(int(P)/(100/(width - textShift*2 - borderThickness*2-4))), 2, self.LCD.color(0,255,0))
 
 
     def update_dynamic_background(self, backgroundMode:int, backgroundColor:int, secondaryBackgroundColor:int):
@@ -264,21 +264,21 @@ class toolset():
             self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, backgroundColor, True)
         elif backgroundMode == 3:
             if redBackgroundComponent == 255 and blueBackgroundComponent > 0:
-                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.colour(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
+                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 blueBackgroundComponent -= 1
             if redBackgroundComponent == 255 and blueBackgroundComponent == 0 and greenBackgroundComponent < 255:
-                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.colour(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
+                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 greenBackgroundComponent += 1
             elif greenBackgroundComponent == 255 and redBackgroundComponent > 0:
-                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.colour(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
+                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 redBackgroundComponent -= 1
             elif greenBackgroundComponent == 255 and redBackgroundComponent == 0 and blueBackgroundComponent < 255:
-                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.colour(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
+                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 blueBackgroundComponent += 1
             elif blueBackgroundComponent == 255 and greenBackgroundComponent > 0:
-                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.colour(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
+                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 greenBackgroundComponent -= 1
             elif blueBackgroundComponent == 255 and greenBackgroundComponent == 0 and redBackgroundComponent < 255:
-                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.colour(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
+                self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 redBackgroundComponent += 1
                 

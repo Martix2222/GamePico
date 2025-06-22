@@ -151,11 +151,11 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.spi.write(self.buffer)
         self.cs(1)
 
-    def colour(self, R,G,B): # Convert RGB888 to RGB565
+    def color(self, R,G,B): # Convert RGB888 to RGB565
         """ 
         Converts the 24-bit color format to the 16-bit color format supported by the display.
         """
-        return (((G&0b00011100)<<3) +((R&0b11111000)>>3)<<8) + (B&0b11111000)+((G&0b11100000)>>5)
+        return (((G&0b00011100)<<3) +((B&0b11111000)>>3)<<8) + (R&0b11111000)+((G&0b11100000)>>5)
     
     def set_brightness(self, brightness:float):
         """ 
