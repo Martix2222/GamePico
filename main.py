@@ -6,7 +6,7 @@ import renderTools
 
 import display_driver
 # The display driver must contain a color() function to convert 24-bit
-# color space to the color space supported by the display.¨
+# color space to the color space supported by the display.
 
 # Initialize the display
 LCD = display_driver.LCD_1inch3()
@@ -40,7 +40,6 @@ class main_menu():
 
         tmpSelection = 0
         selection = 0
-        introProgress = LCD.height
         justPressed = False
         buttonLock = False
         buttonRepetition_ns = 200000000
@@ -57,10 +56,12 @@ class main_menu():
         while(1):
             self.Tools.update_dynamic_background(0, backgroundColor, secondaryBackgroundColor)
 
+            # Draw the title
             LCD.fill_rect(15,105,20 + len(title)*8,30, buttonBorderColor)
-            LCD.fill_rect(20,110,10 + len(title)*8,20, LCD.color(90, 90, 90))
-            self.Tools.center_text(title, 25 + len(title)*4, 120, 0xFFFF, LCD.color(90, 90, 90))
+            LCD.fill_rect(20,110,10 + len(title)*8,20, theme.secondary_color)
+            self.Tools.center_text(title, 25 + len(title)*4, 120, 0xFFFF, theme.secondary_color)
             
+            # Draw debug stats
             self.Tools.center_y_text(f"Free RAM: {gc.mem_free()/1000} KB", 5, 5, 0x0000, 0xFFFF)
             self.Tools.center_y_text(f"Render time: {(time.time_ns() - startTime)/1000000} ms ", 5, 15, 0x0000, 0xFFFF)
             startTime = time.time_ns()
@@ -111,7 +112,7 @@ class main_menu():
             if(keyA.value() == 0 or selection==1):
                 tmpSelection = 1
                 selection = 1
-                self.static_menu.reset_buttons()
+                reset_buttons(self)
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[0])*4 - horizontalReserve - 8, 30, options[0], buttonPressedTextColor, buttonPressedColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "A", "",""])
             elif tmpSelection == 1:
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[0])*4 - horizontalReserve - 8, 30, options[0], buttonSelectedTextColor, buttonColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "A", "",""])
@@ -122,7 +123,7 @@ class main_menu():
             if(keyB.value() == 0 or selection==2):
                 tmpSelection = 2
                 selection = 2
-                self.static_menu.reset_buttons()
+                reset_buttons(self)
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[1])*4 - horizontalReserve - 8, 90, options[1], buttonPressedTextColor, buttonPressedColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "B", "",""])
             elif tmpSelection == 2:
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[1])*4 - horizontalReserve - 8, 90, options[1], buttonSelectedTextColor, buttonColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "B", "",""])
@@ -133,7 +134,7 @@ class main_menu():
             if(keyX.value() == 0 or selection==3):
                 tmpSelection = 3
                 selection = 3
-                self.static_menu.reset_buttons()
+                reset_buttons(self)
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[2])*4 - horizontalReserve - 8, 150, options[2], buttonPressedTextColor, buttonPressedColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "X", "",""])
             elif tmpSelection == 3:
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[2])*4 - horizontalReserve - 8, 150, options[2], buttonSelectedTextColor, buttonColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "X", "",""])
@@ -144,7 +145,7 @@ class main_menu():
             if(keyY.value() == 0 or selection==4):
                 tmpSelection = 4
                 selection = 4
-                self.static_menu.reset_buttons()
+                reset_buttons(self)
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[3])*4 - horizontalReserve - 8, 210, options[3], buttonPressedTextColor, buttonPressedColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "Y", "",""])
             elif tmpSelection == 4:
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[3])*4 - horizontalReserve - 8, 210, options[3], buttonSelectedTextColor, buttonColor, horizontalReserve, verticalReserve, buttonSelectedBorderColor, buttonBorderThickness, ["", "Y", "",""])
