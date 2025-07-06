@@ -36,8 +36,6 @@ class main_menu():
               buttonTextColor=theme.text_color, buttonPressedTextColor = theme.button_pressed_text_color, buttonSelectedTextColor=theme.button_selected_border_color, verticalReserve=theme.vertical_reserve, horizontalReserve=theme.horizontal_reserve, 
               introCircleColor=theme.primary_color, introBackgroundColor=theme.background_color, introCircleThickness=theme.intro_circle_thickness):
     
-        LCD.fill(backgroundColor)
-
         tmpSelection = 0
         selection = 0
         justPressed = False
@@ -45,6 +43,10 @@ class main_menu():
         buttonRepetition_ns = 200000000
         repeatPressWaitTime = time.time_ns() + buttonRepetition_ns
         startTime = time.time_ns()
+        renderEndTime = time.time_ns()
+        showEndTime = time.time_ns()
+
+        LCD.fill(backgroundColor)
 
         def reset_buttons(self):
             self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[0])*4 - horizontalReserve - 8, 30, options[0], buttonTextColor, buttonColor, horizontalReserve, verticalReserve, buttonBorderColor, buttonBorderThickness, ["", "A", "",""])
@@ -54,7 +56,7 @@ class main_menu():
 
 
         while(1):
-            self.Tools.update_dynamic_background(0, backgroundColor, secondaryBackgroundColor)
+            self.Tools.update_animated_background(0, backgroundColor, secondaryBackgroundColor)
 
             # Draw the title
             LCD.fill_rect(15,105,20 + len(title)*8,30, buttonBorderColor)
@@ -62,8 +64,11 @@ class main_menu():
             self.Tools.center_text(title, 25 + len(title)*4, 120, 0xFFFF, theme.secondary_color)
             
             # Draw debug stats
-            self.Tools.center_y_text(f"Free RAM: {gc.mem_free()/1000} KB", 5, 5, 0x0000, 0xFFFF)
-            self.Tools.center_y_text(f"Render time: {(time.time_ns() - startTime)/1000000} ms ", 5, 15, 0x0000, 0xFFFF)
+            freeMemoryKB = gc.mem_free()/1000
+            self.Tools.center_y_text(f"Free RAM: {freeMemoryKB}{" "*(7-len(str(freeMemoryKB)))}KB", 5, 5, 0x0000, 0xFFFF)
+            self.Tools.center_y_text(f"Total time: {round((time.time_ns() - startTime)/1000000, 1)} ms ", 5, 15, 0x0000, 0xFFFF)
+            self.Tools.center_y_text(f"Render time: {round((renderEndTime - startTime)/1000000, 1)} ms ", 5, 25, 0x0000, 0xFFFF)
+            self.Tools.center_y_text(f"Show time: {round((showEndTime - renderEndTime)/1000000, 1)} ms ", 5, 35, 0x0000, 0xFFFF)
             startTime = time.time_ns()
 
 
@@ -152,8 +157,11 @@ class main_menu():
             else:
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[3])*4 - horizontalReserve - 8, 210, options[3], buttonTextColor, buttonColor, horizontalReserve, verticalReserve, buttonBorderColor, buttonBorderThickness, ["", "Y", "",""])
 
-                            
+            renderEndTime = time.time_ns()
+
             LCD.show()
+
+            showEndTime = time.time_ns()
 
 
             if selection != 0:

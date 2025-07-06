@@ -236,7 +236,7 @@ class toolset():
                     int(int(P)/(100/(width - textShift*2 - borderThickness*2-4))), 2, self.LCD.color(0,255,0))
 
 
-    def update_dynamic_background(self, backgroundMode:int, backgroundColor:int, secondaryBackgroundColor:int):
+    def update_animated_background(self, backgroundMode:int, backgroundColor:int, secondaryBackgroundColor:int):
         """
         Used to create and update an animated background in a specific style. \n
         Current supported *backgroundMode* values:\n
