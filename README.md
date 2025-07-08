@@ -1,5 +1,5 @@
 ### Disclaimer
-This is an independent project made for the Raspberry Pi Pico but it is in no way affiliated with the official Raspberry Pi.
+This is an independent project made for the Raspberry Pi Pico but it is in no way affiliated with the official Raspberry Pi Ltd.
 
 # About this project
 This is a complete overhaul of a project I started in my free time. This means that I have large parts of the code already written, but I decided to completely restructure the code by starting over in order to make it much more expandable and actually worthy of publishing on GitHub.
