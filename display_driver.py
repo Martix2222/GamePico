@@ -2,13 +2,22 @@ from machine import Pin,SPI,PWM
 import framebuf
 import time
 import os
+from sdcard_driver import SDCard
 
+
+# Display pins
 BL = 13
 DC = 8
 RST = 12
 MOSI = 11
 SCK = 10
 CS = 9
+
+# SD reader pins
+SD_CS = 22
+SD_MISO = 4
+SD_CLK = 6
+SD_MOSI = 7
 
 
 class LCD_1inch3(framebuf.FrameBuffer):
@@ -20,9 +29,9 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.rst = Pin(RST,Pin.OUT)
         
         self.cs(1)
-        self.spi = SPI(1)
-        self.spi = SPI(1,1000_000)
-        self.spi = SPI(1,100000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
+        # self.spi = SPI(1)
+        # self.spi = SPI(1,1000_000)
+        self.spi = SPI(1,100_000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
         self.dc = Pin(DC,Pin.OUT)
         self.dc(1)
         self.buffer = bytearray(self.height * self.width * 2)
@@ -33,7 +42,10 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.green =   0x001f
         self.blue  =   0xf800
         self.white =   0xffff
-        
+
+        self.SDcs = Pin(SD_CS)
+        self.SDcs(1)
+
     def write_cmd(self, cmd):
         self.cs(1)
         self.dc(0)
@@ -151,12 +163,53 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.spi.write(self.buffer)
         self.cs(1)
 
+    def screenshot(self, filename):
+        """ 
+        Save the current display buffer to a .bin file.
+        Arguments:
+            filename (str): The name of the file to save the screenshot to.
+        """
+
+        mountPoint = "/sd"
+
+        try:
+            print("SD init succes!!!")
+            SD = SDCard(SPI(0, 10_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 10_000_000)
+            os.mount(SD, mountPoint)
+            SDavailable = True
+        except OSError:
+            print("SD init fail!!!")
+            SDavailable = False
+
+        saveLocation = "/screenshots/"
+        if SDavailable:
+            saveLocation = "/sd/screenshots/"
+        
+            if not "screenshots" in os.listdir("/sd"):
+                os.mkdir("/sd/screenshots")
+            prefix = len(os.listdir("/sd/screenshots"))
+        else:
+            if not "screenshots" in os.listdir("/"):
+                os.mkdir("/screenshots")
+            prefix = len(os.listdir("/screenshots"))
+
+
+
+        with open(saveLocation + str(prefix) + filename, 'wb') as f:
+            f.write(self.buffer)
+            f.close()
+
+
+        os.umount(mountPoint)
+        SD.deinit()
+        self.SDcs(1)
+
     @staticmethod
-    def color(R,G,B): # Convert RGB888 to RGB565
+    def color(R:int,G:int,B:int): # Convert RGB888 to RGB565
         """ 
         Converts the 24-bit color format to the 16-bit color format supported by the display.
         """
-        return (((G&0b00011100)<<3) +((B&0b11111000)>>3)<<8) + (R&0b11111000)+((G&0b11100000)>>5)
+        return (((G&0b00011100)<<3) + ((B&0b11111000)>>3)<<8) + (R&0b11111000) + ((G&0b11100000)>>5)
     
     @staticmethod
     def set_brightness(brightness:float):

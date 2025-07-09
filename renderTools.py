@@ -15,9 +15,8 @@ class toolset():
 
         self.FONTS = FONTS(LCD)
 
-        self.UPSavailable = False
         try: 
-            import UPS_driver
+            import UPS_driver as UPS_driver
             # Create an ADS1115 ADC (16-bit) instance.
             self.UPS = UPS_driver.INA219(addr=0x43)
             self.UPSavailable = True

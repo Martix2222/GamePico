@@ -4,7 +4,7 @@ import gc
 
 import renderTools
 
-import display_driver
+import display_driver as display_driver
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
@@ -168,6 +168,7 @@ class main_menu():
                 if selection == 1:
                     self.Tools.scene_circle_transition(240 - buttonBorderThickness*2 - len(options[0])*4 - horizontalReserve - 8, 30, introCircleColor, introBackgroundColor, introCircleThickness, int(introCircleThickness/2))
                 elif selection == 2:
+                    LCD.screenshot("menu_screenshot.bin")
                     self.Tools.scene_circle_transition(240 - buttonBorderThickness*2 - len(options[1])*4 - horizontalReserve - 8, 90, introCircleColor, introBackgroundColor, introCircleThickness, int(introCircleThickness/2))
                 elif selection == 3:
                     self.Tools.scene_circle_transition(240 - buttonBorderThickness*2 - len(options[2])*4 - horizontalReserve - 8, 150, introCircleColor, introBackgroundColor, introCircleThickness, int(introCircleThickness/2))

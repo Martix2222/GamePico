@@ -11,6 +11,7 @@ Currently I focus on making this project fully compatible with Raspberry Pi Pico
 There is also support for the [Pico-UPS-A](https://www.waveshare.com/pico-ups-a.htm) module from Waveshare with integration into the main menus.
 
 # Credits
+**_NOTE:_** Most of the libraries credited have been modified in order to function properly with this project.
 ## Reference code for module drivers
 I used this code largely unmodified or with some minor changes or feature additions
 - [Pico-UPS-A](https://www.waveshare.com/wiki/Pico-UPS-A#Demo_codes)
@@ -20,3 +21,5 @@ I used this code largely unmodified or with some minor changes or feature additi
 ## Libraries used
 - [FONTS](https://thepihut.com/blogs/raspberry-pi-tutorials/advanced-text-with-micropython-on-raspberry-pi-pico-displays?)
     - Again by Tony Goodhew for [thepihut.com](https://thepihut.com)
+- [sdcard](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/storage/sdcard/sdcard.py)
+    - MicroPython driver for SD cards using SPI bus. [Original repository](https://github.com/micropython/micropython-lib/tree/master)

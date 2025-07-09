@@ -57,6 +57,7 @@ class Mode:
  
 class INA219:
     def __init__(self, i2c_bus=1, addr=0x40):
+        self.i2c_bus = i2c_bus
         self.i2c = I2C(i2c_bus);
         self.addr = addr
 
@@ -67,8 +68,17 @@ class INA219:
         self.set_calibration_32V_2A()
         
     def read(self,address):
-        data = self.i2c.readfrom_mem(self.addr, address, 2)
-        return ((data[0] * 256 ) + data[1])
+        
+        # Added this try, because after the SD card reader uses the same pins and every
+        # time it is accessed this i2c interface must be reinitialized to run properly again.
+        try:
+            data = self.i2c.readfrom_mem(self.addr, address, 2)
+            return ((data[0] * 256 ) + data[1])
+        except OSError:
+            self.i2c = I2C(self.i2c_bus)
+            data = self.i2c.readfrom_mem(self.addr, address, 2)
+            return ((data[0] * 256 ) + data[1])
+
 
     def write(self,address,data):
         temp = [0,0]
