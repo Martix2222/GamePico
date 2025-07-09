@@ -31,7 +31,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.cs(1)
         # self.spi = SPI(1)
         # self.spi = SPI(1,1000_000)
-        self.spi = SPI(1,100_000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
+        self.spi = SPI(1,150_000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
         self.dc = Pin(DC,Pin.OUT)
         self.dc(1)
         self.buffer = bytearray(self.height * self.width * 2)
@@ -174,7 +174,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         try:
             print("SD init succes!!!")
-            SD = SDCard(SPI(0, 10_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 10_000_000)
+            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 150_000_000)
             os.mount(SD, mountPoint)
             SDavailable = True
         except OSError:

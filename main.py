@@ -1,6 +1,9 @@
-from machine import Pin
+from machine import Pin, freq
 import time
 import gc
+
+# Overclock
+freq(300_000_000)
 
 import renderTools
 
