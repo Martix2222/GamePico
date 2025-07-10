@@ -1,6 +1,7 @@
 from machine import Pin, freq
 import time
 import gc
+import framebuf
 
 # Overclock
 freq(300_000_000)
@@ -45,6 +46,10 @@ class main_menu():
         buttonLock = False
         buttonRepetition_ns = 200000000
         repeatPressWaitTime = time.time_ns() + buttonRepetition_ns
+
+        # Debug variables:
+        screenshotNO = 0
+        enableDebug = False
         startTime = time.time_ns()
         renderEndTime = time.time_ns()
         showEndTime = time.time_ns()
@@ -66,12 +71,14 @@ class main_menu():
             LCD.fill_rect(20,110,10 + len(title)*8,20, theme.secondary_color)
             self.Tools.center_text(title, 25 + len(title)*4, 120, 0xFFFF, theme.secondary_color)
             
-            # Draw debug stats
-            freeMemoryKB = gc.mem_free()/1000
-            self.Tools.center_y_text(f"Free RAM: {freeMemoryKB}{" "*(7-len(str(freeMemoryKB)))}KB", 5, 5, 0x0000, 0xFFFF)
-            self.Tools.center_y_text(f"Total time: {round((time.time_ns() - startTime)/1000000, 1)} ms ", 5, 15, 0x0000, 0xFFFF)
-            self.Tools.center_y_text(f"Render time: {round((renderEndTime - startTime)/1000000, 1)} ms ", 5, 25, 0x0000, 0xFFFF)
-            self.Tools.center_y_text(f"Show time: {round((showEndTime - renderEndTime)/1000000, 1)} ms ", 5, 35, 0x0000, 0xFFFF)
+            if enableDebug:
+                # Draw debug stats
+                freeMemoryKB = gc.mem_free()/1000
+                self.Tools.center_y_text(f"Free RAM: {freeMemoryKB}{" "*(7-len(str(freeMemoryKB)))}KB", 5, 5, 0x0000, 0xFFFF)
+                self.Tools.center_y_text(f"Total time: {round((time.time_ns() - startTime)/1000000, 1)} ms ", 5, 15, 0x0000, 0xFFFF)
+                self.Tools.center_y_text(f"Render time: {round((renderEndTime - startTime)/1000000, 1)} ms ", 5, 25, 0x0000, 0xFFFF)
+                self.Tools.center_y_text(f"Show time: {round((showEndTime - renderEndTime)/1000000, 1)} ms ", 5, 35, 0x0000, 0xFFFF)
+            
             startTime = time.time_ns()
 
 
@@ -163,7 +170,6 @@ class main_menu():
             renderEndTime = time.time_ns()
 
             LCD.show()
-
             showEndTime = time.time_ns()
 
 
@@ -171,7 +177,6 @@ class main_menu():
                 if selection == 1:
                     self.Tools.scene_circle_transition(240 - buttonBorderThickness*2 - len(options[0])*4 - horizontalReserve - 8, 30, introCircleColor, introBackgroundColor, introCircleThickness, int(introCircleThickness/2))
                 elif selection == 2:
-                    LCD.screenshot("menu_screenshot.bin")
                     self.Tools.scene_circle_transition(240 - buttonBorderThickness*2 - len(options[1])*4 - horizontalReserve - 8, 90, introCircleColor, introBackgroundColor, introCircleThickness, int(introCircleThickness/2))
                 elif selection == 3:
                     self.Tools.scene_circle_transition(240 - buttonBorderThickness*2 - len(options[2])*4 - horizontalReserve - 8, 150, introCircleColor, introBackgroundColor, introCircleThickness, int(introCircleThickness/2))
@@ -196,5 +201,15 @@ class main_menu():
 
 
 if __name__=='__main__':
+    gc.collect()
+    with open("logo 120x61.bin", "rb") as f:
+        image = bytearray(f.read()[7:])
+
+    LCD.fill(0xffff)
+    LCD.blit(framebuf.FrameBuffer(image, 120, 61, framebuf.RGB565), 60, 90)
+    LCD.show()
+
+    time.sleep(2)
+
     MainMenu = main_menu()
     MainMenu.mainloop()
