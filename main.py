@@ -48,7 +48,6 @@ class main_menu():
         repeatPressWaitTime = time.time_ns() + buttonRepetition_ns
 
         # Debug variables:
-        screenshotNO = 0
         enableDebug = False
         startTime = time.time_ns()
         renderEndTime = time.time_ns()

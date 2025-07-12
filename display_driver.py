@@ -46,6 +46,35 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.SDcs = Pin(SD_CS)
         self.SDcs(1)
 
+        self.sdMountPoint = "/sd"
+        self.mainScreenshotFolder = "/screenshots"
+        self.currentRecordingFolder = "/1"
+        self.stillRecording = False
+
+    def init_save_location(self):
+        try:
+            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 150_000_000)
+            os.mount(SD, self.sdMountPoint)
+            SDavailable = True
+        except OSError:
+            SDavailable = False
+
+
+        if SDavailable:
+            if not self.mainScreenshotFolder[1:] in os.listdir(self.sdMountPoint):
+                os.mkdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder)
+            self.currentRecordingFolder = "/" + str(len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder)))
+        else:
+            if not self.mainScreenshotFolder[1:] in os.listdir("/"):
+                os.mkdir(self.mainScreenshotFolder)
+            self.currentRecordingFolder = "/" + str(len(os.listdir(self.mainScreenshotFolder)))
+
+
+        os.umount(self.sdMountPoint)
+        SD.deinit()
+        self.SDcs(1)
+
+
     def write_cmd(self, cmd):
         self.cs(1)
         self.dc(0)
@@ -142,7 +171,20 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.write_cmd(0x29)
 
-    def show(self):
+    def show(self, record:bool = False):
+        """ 
+        Arguments:
+            record (bool): Set to true if you want to capture the current frame into a file on the SD card if it is available.
+        """
+
+        if record and self.stillRecording:
+            self.screenshot("frame.bin")
+        elif record and not self.stillRecording:
+            self.init_save_location()
+            self.screenshot("frame.bin")
+        else:
+            self.stillRecording = False
+
         self.write_cmd(0x2A)
         self.write_data(0x00)
         self.write_data(0x00)
@@ -170,37 +212,25 @@ class LCD_1inch3(framebuf.FrameBuffer):
             filename (str): The name of the file to save the screenshot to.
         """
 
-        mountPoint = "/sd"
-
         try:
-            print("SD init succes!!!")
             SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 150_000_000)
-            os.mount(SD, mountPoint)
+            os.mount(SD, self.sdMountPoint)
             SDavailable = True
         except OSError:
-            print("SD init fail!!!")
             SDavailable = False
 
-        saveLocation = "/screenshots/"
-        if SDavailable:
-            saveLocation = "/sd/screenshots/"
-        
-            if not "screenshots" in os.listdir("/sd"):
-                os.mkdir("/sd/screenshots")
-            prefix = len(os.listdir("/sd/screenshots"))
+        if SDavailable:        
+            prefix = str(len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder)))
         else:
-            if not "screenshots" in os.listdir("/"):
-                os.mkdir("/screenshots")
-            prefix = len(os.listdir("/screenshots"))
+            prefix = str(len(os.listdir(self.mainScreenshotFolder)))
 
 
-
-        with open(saveLocation + str(prefix) + filename, 'wb') as f:
+        with open(self.mainScreenshotFolder + "0"*(4-len(prefix)) + prefix + filename, 'wb') as f:
             f.write(self.buffer)
             f.close()
 
 
-        os.umount(mountPoint)
+        os.umount(self.sdMountPoint)
         SD.deinit()
         self.SDcs(1)
 
