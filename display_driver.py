@@ -90,7 +90,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.cs(1)
 
     def init_display(self):
-        """Initialize dispaly"""  
+        """Initialize display"""  
         self.rst(1)
         self.rst(0)
         self.rst(1)

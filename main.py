@@ -1,4 +1,4 @@
-from machine import Pin, freq
+from machine import Pin, freq, WDT, soft_reset
 import time
 import gc
 import framebuf
@@ -48,7 +48,7 @@ class main_menu():
         repeatPressWaitTime = time.time_ns() + buttonRepetition_ns
 
         # Debug variables:
-        enableDebug = False
+        enableDebug = True
         startTime = time.time_ns()
         renderEndTime = time.time_ns()
         showEndTime = time.time_ns()
@@ -63,6 +63,8 @@ class main_menu():
 
 
         while(1):
+            time.sleep_ms(5)
+            
             self.Tools.update_animated_background(0, backgroundColor, secondaryBackgroundColor)
 
             # Draw the title
@@ -187,28 +189,54 @@ class main_menu():
 
     def mainloop(self):
             choice = 0
-            while choice != 3:
+            while True:
                 choice = self.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"])
                 if choice == 1:
+                    # Play option
                     pass
                 elif choice == 2:
+                    # Settings option
                     pass
-                else:
+                elif choice == 3:
+                    # Exit option - break out of the loop
+                    break
+                elif choice == 4:
+                    # Controls option
                     pass
         
+
+def reset_board():
+    # Reset the display and system and revert the overclock
+    # This is essential because without reverting it the
+    # board starts behaving weirdly
+    time.sleep_ms(500)
+    LCD.fill(0)
+    LCD.show()
+    freq(125_000_000)
+    soft_reset()
 
 
 
 if __name__=='__main__':
     gc.collect()
-    with open("logo 120x61.bin", "rb") as f:
-        image = bytearray(f.read()[7:])
 
-    LCD.fill(0xffff)
-    LCD.blit(framebuf.FrameBuffer(image, 120, 61, framebuf.RGB565), 60, 90)
+    try:
+        with open("logo 120x61.bin", "rb") as f:
+            image = bytearray(f.read()[7:])
+            f.close()
+        LCD.fill(0xffff)
+        LCD.blit(framebuf.FrameBuffer(image, 120, 61, framebuf.RGB565), 60, 90)
+    except:
+        LCD.text("error", 0, 0, 0xffff)
+        
     LCD.show()
 
     time.sleep(2)
 
-    MainMenu = main_menu()
-    MainMenu.mainloop()
+
+    try:
+        MainMenu = main_menu()
+        MainMenu.mainloop()
+    finally:
+        reset_board()
+        print("Clean exit successful.")
