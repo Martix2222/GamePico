@@ -20,6 +20,80 @@ SD_CLK = 6
 SD_MOSI = 7
 
 
+class Was_Pressed():
+    def __init__(self):
+        self.registeredPresses = {}
+
+        # initialize buttons:
+        keyA = Pin(15,Pin.IN,Pin.PULL_UP)
+        keyA.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        keyB = Pin(17,Pin.IN,Pin.PULL_UP)
+        keyB.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
+        keyX.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        keyY = Pin(21 ,Pin.IN,Pin.PULL_UP)
+        keyY.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        
+        up = Pin(2,Pin.IN,Pin.PULL_UP)
+        up.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        down = Pin(18,Pin.IN,Pin.PULL_UP)
+        down.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        left = Pin(16,Pin.IN,Pin.PULL_UP)
+        left.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        right = Pin(20,Pin.IN,Pin.PULL_UP)
+        right.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
+        ctrl.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+
+    def press_handler(self, pin):
+        if pin in self.registeredPresses.keys():
+            self.registeredPresses[pin] += 1
+        else:
+            self.registeredPresses[pin] = 1
+
+    def was_pressed(self, pin:int, subtract:bool = True):
+        """
+        Checks if a button was pressed.
+        Arguments:
+            pin (int): The pin number of the button to check.
+            subtract (bool): If True, the count of presses in the queue will be decremented by 1 after checking. \n
+                             If False, the count will not be changed.
+        Returns:
+            bool: True if the button was pressed at least once, False otherwise.
+        """
+
+        if pin in self.registeredPresses.keys():
+            if self.registeredPresses[pin] > 0:
+                if subtract:
+                    self.registeredPresses[pin] -= 1
+                return True
+            else:
+                return False
+        else:
+            return False
+    
+    def keyA(self, subtract:bool = True):
+        return self.was_pressed(15, subtract)
+    def keyB(self, subtract:bool = True):
+        return self.was_pressed(17, subtract)
+    def keyX(self, subtract:bool = True):
+        return self.was_pressed(19, subtract)
+    def keyY(self, subtract:bool = True):
+        return self.was_pressed(21, subtract)
+    
+    def up(self, subtract:bool = True):
+        return self.was_pressed(2, subtract)
+    def down(self, subtract:bool = True):
+        return self.was_pressed(18, subtract)
+    def left(self, subtract:bool = True):
+        return self.was_pressed(16, subtract)
+    def right(self, subtract:bool = True):
+        return self.was_pressed(20, subtract)
+    def ctrl(self, subtract:bool = True):
+        return self.was_pressed(3, subtract)
+
+
+
 class LCD_1inch3(framebuf.FrameBuffer):
     def __init__(self):
         self.width = 240
@@ -265,89 +339,3 @@ class LCD_1inch3(framebuf.FrameBuffer):
         pwm.freq(1000)
         pwm.duty_u16(min(int(65535*brightness/100), 65535)) # max 65535
 
-
-
-
-# ========== Unused old code for reference ========== 
-# if __name__=='__main__':
-#     pwm = PWM(Pin(BL))
-#     pwm.freq(1000)
-#     pwm.duty_u16(32768)#max 65535
-
-#     LCD = LCD_1inch3()
-#     #color BRG
-#     LCD.fill(LCD.white)
-#     LCD.show()
-    
-
-#     keyA = Pin(15,Pin.IN,Pin.PULL_UP)
-#     keyB = Pin(17,Pin.IN,Pin.PULL_UP)
-#     keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
-#     keyY= Pin(21 ,Pin.IN,Pin.PULL_UP)
-    
-#     up = Pin(2,Pin.IN,Pin.PULL_UP)
-#     dowm = Pin(18,Pin.IN,Pin.PULL_UP)
-#     left = Pin(16,Pin.IN,Pin.PULL_UP)
-#     right = Pin(20,Pin.IN,Pin.PULL_UP)
-#     ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
-    
-#     while(1):
-#         if keyA.value() == 0:
-#             LCD.fill_rect(208,15,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(208,15,30,30,LCD.white)
-#             LCD.rect(208,15,30,30,LCD.red)
-            
-            
-#         if(keyB.value() == 0):
-#             LCD.fill_rect(208,75,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(208,75,30,30,LCD.white)
-#             LCD.rect(208,75,30,30,LCD.red)
-            
-            
-#         if(keyX.value() == 0):
-#             LCD.fill_rect(208,135,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(208,135,30,30,LCD.white)
-#             LCD.rect(208,135,30,30,LCD.red)
-            
-#         if(keyY.value() == 0):
-#             LCD.fill_rect(208,195,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(208,195,30,30,LCD.white)
-#             LCD.rect(208,195,30,30,LCD.red)
-            
-#         if(up.value() == 0):
-#             LCD.fill_rect(60,60,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(60,60,30,30,LCD.white)
-#             LCD.rect(60,60,30,30,LCD.red)
-            
-#         if(dowm.value() == 0):
-#             LCD.fill_rect(60,150,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(60,150,30,30,LCD.white)
-#             LCD.rect(60,150,30,30,LCD.red)
-            
-#         if(left.value() == 0):
-#             LCD.fill_rect(15,105,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(15,105,30,30,LCD.white)
-#             LCD.rect(15,105,30,30,LCD.red)
-        
-#         if(right.value() == 0):
-#             LCD.fill_rect(105,105,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(105,105,30,30,LCD.white)
-#             LCD.rect(105,105,30,30,LCD.red)
-        
-#         if(ctrl.value() == 0):
-#             LCD.fill_rect(60,105,30,30,LCD.red)
-#         else :
-#             LCD.fill_rect(60,105,30,30,LCD.white)
-#             LCD.rect(60,105,30,30,LCD.red)
-                       
-#         LCD.show()
-#     time.sleep(1)
-#     LCD.fill(0xFFFF)
