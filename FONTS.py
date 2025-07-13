@@ -1,7 +1,7 @@
 # ===========Start of FONTS Section=========================
 # Standard ASCII 5x8 font
 # https://gist.github.com/tdicola/229b3eeddc12d58fb0bc724a9062aa05
-from display_driver import LCD_1inch3 as displayClass
+from drivers.display_driver import LCD_1inch3 as displayClass
 
 class FONTS():
     def __init__(self, LCD:displayClass):

@@ -8,7 +8,7 @@ freq(300_000_000)
 
 import renderTools
 
-import display_driver as display_driver
+import drivers.display_driver as display_driver
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 

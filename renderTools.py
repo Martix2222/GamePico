@@ -2,7 +2,7 @@ import time
 import math
 import random
 
-from display_driver import LCD_1inch3 as displayClass
+from drivers.display_driver import LCD_1inch3 as displayClass
 # The display driver must contain a colour() function to convert 24-bit
 # color space to the color space supported by the display.
 
@@ -16,7 +16,7 @@ class toolset():
         self.FONTS = FONTS(LCD)
 
         try: 
-            import UPS_driver as UPS_driver
+            import drivers.UPS_driver as UPS_driver
             # Create an ADS1115 ADC (16-bit) instance.
             self.UPS = UPS_driver.INA219(addr=0x43)
             self.UPSavailable = True

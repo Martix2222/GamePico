@@ -2,7 +2,7 @@ from machine import Pin,SPI,PWM
 import framebuf
 import time
 import os
-from sdcard_driver import SDCard
+from drivers.sdcard_driver import SDCard
 
 
 # Display pins

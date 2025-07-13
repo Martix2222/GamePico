@@ -1,4 +1,4 @@
-from display_driver import LCD_1inch3 as displayClass
+from drivers.display_driver import LCD_1inch3 as displayClass
 # The display driver must contain a colour() function to convert 24-bit
 # color space to the color space supported by the display.
 
