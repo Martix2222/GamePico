@@ -19,45 +19,54 @@ SD_MISO = 4
 SD_CLK = 6
 SD_MOSI = 7
 
+# initialize buttons:
+keyA = Pin(15,Pin.IN,Pin.PULL_UP)
+keyB = Pin(17,Pin.IN,Pin.PULL_UP)
+keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
+keyY = Pin(21 ,Pin.IN,Pin.PULL_UP)
+
+up = Pin(2,Pin.IN,Pin.PULL_UP)
+down = Pin(18,Pin.IN,Pin.PULL_UP)
+left = Pin(16,Pin.IN,Pin.PULL_UP)
+right = Pin(20,Pin.IN,Pin.PULL_UP)
+ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 
 class Was_Pressed():
     def __init__(self):
         self.registeredPresses = {}
+        # self.lastPressTime = {}
+        self.holdRepetitionDelay = 0.5  # seconds
+        self.holdRepetitionFrequency = 0.2  # seconds
 
-        # initialize buttons:
-        keyA = Pin(15,Pin.IN,Pin.PULL_UP)
+
+        # Initialize key press handling
         keyA.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        keyB = Pin(17,Pin.IN,Pin.PULL_UP)
         keyB.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
         keyX.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        keyY = Pin(21 ,Pin.IN,Pin.PULL_UP)
         keyY.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
         
-        up = Pin(2,Pin.IN,Pin.PULL_UP)
         up.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        down = Pin(18,Pin.IN,Pin.PULL_UP)
         down.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        left = Pin(16,Pin.IN,Pin.PULL_UP)
         left.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        right = Pin(20,Pin.IN,Pin.PULL_UP)
         right.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
         ctrl.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
 
-    def press_handler(self, pin):
+
+    def press_handler(self, pin:Pin):
         if pin in self.registeredPresses.keys():
             self.registeredPresses[pin] += 1
         else:
             self.registeredPresses[pin] = 1
 
-    def was_pressed(self, pin:int, subtract:bool = True):
+
+    def was_pressed(self, pin:Pin, subtract:bool = True, clearQue:bool = False):
         """
         Checks if a button was pressed.
         Arguments:
             pin (int): The pin number of the button to check.
             subtract (bool): If True, the count of presses in the queue will be decremented by 1 after checking. \n
                              If False, the count will not be changed.
+            clearQue (bool): If True, the count of presses in the queue will be set to 0 after checking. \n
         Returns:
             bool: True if the button was pressed at least once, False otherwise.
         """
@@ -66,31 +75,33 @@ class Was_Pressed():
             if self.registeredPresses[pin] > 0:
                 if subtract:
                     self.registeredPresses[pin] -= 1
+                if clearQue:
+                    self.registeredPresses[pin] = 0
                 return True
             else:
                 return False
         else:
             return False
     
-    def keyA(self, subtract:bool = True):
-        return self.was_pressed(15, subtract)
-    def keyB(self, subtract:bool = True):
-        return self.was_pressed(17, subtract)
-    def keyX(self, subtract:bool = True):
-        return self.was_pressed(19, subtract)
-    def keyY(self, subtract:bool = True):
-        return self.was_pressed(21, subtract)
-    
-    def up(self, subtract:bool = True):
-        return self.was_pressed(2, subtract)
-    def down(self, subtract:bool = True):
-        return self.was_pressed(18, subtract)
-    def left(self, subtract:bool = True):
-        return self.was_pressed(16, subtract)
-    def right(self, subtract:bool = True):
-        return self.was_pressed(20, subtract)
-    def ctrl(self, subtract:bool = True):
-        return self.was_pressed(3, subtract)
+    def keyA(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(keyA, subtract, clearQueue)
+    def keyB(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(keyB, subtract, clearQueue)
+    def keyX(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(keyX, subtract, clearQueue)
+    def keyY(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(keyY, subtract, clearQueue)
+
+    def up(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(up, subtract, clearQueue)
+    def down(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(down, subtract, clearQueue)
+    def left(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(left, subtract, clearQueue)
+    def right(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(right, subtract, clearQueue)
+    def ctrl(self, subtract:bool = True, clearQueue:bool = False):
+        return self.was_pressed(ctrl, subtract, clearQueue)
 
 
 
