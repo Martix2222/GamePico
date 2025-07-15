@@ -3,9 +3,6 @@ import time
 import gc
 import framebuf
 
-# Overclock
-freq(300_000_000)
-
 import renderTools
 
 import drivers.display_driver as display_driver
@@ -18,17 +15,10 @@ LCD = display_driver.LCD_1inch3()
 import themes
 theme = themes.Default_theme(LCD)
 
-# initialize buttons:
-keyA = Pin(15,Pin.IN,Pin.PULL_UP)
-keyB = Pin(17,Pin.IN,Pin.PULL_UP)
-keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
-keyY = Pin(21 ,Pin.IN,Pin.PULL_UP)
+WasPressed = display_driver.Was_Pressed()
 
-up = Pin(2,Pin.IN,Pin.PULL_UP)
-down = Pin(18,Pin.IN,Pin.PULL_UP)
-left = Pin(16,Pin.IN,Pin.PULL_UP)
-right = Pin(20,Pin.IN,Pin.PULL_UP)
-ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
+# Overclock
+freq(300_000_000)
 
 class main_menu():
     def __init__(self) -> None:
@@ -85,47 +75,31 @@ class main_menu():
 
             self.Tools.draw_battery_statistics(5, 170, theme.text_color, theme.primary_color, theme.secondary_color, theme.text_color)
             
-
-            if (justPressed == True and (up.value() == 0 or down.value() == 0 or left.value() == 0 or right.value() == 0) and repeatPressWaitTime < time.time_ns()):
-                repeatPressWaitTime = time.time_ns() + buttonRepetition_ns
-                buttonLock = True
-                justPressed = False
-            elif ((up.value() == 0 or down.value() == 0 or left.value() == 0 or right.value() == 0) and repeatPressWaitTime >= time.time_ns()):
-                buttonLock = True
+            if WasPressed.keyA(False) or WasPressed.keyB(False) or WasPressed.keyX(False) or WasPressed.keyY(False):
+                abxyPressed = True
             else:
-                buttonLock = False
+                abxyPressed = False
 
 
-            if(up.value() == 0 and not (keyA.value() == 0 or keyB.value() == 0 or keyX.value() == 0 or keyY.value() == 0) and not buttonLock):
+            if (WasPressed.up(clearQueue=True) or WasPressed.left(clearQueue=True)) and not abxyPressed and not buttonLock:
                 justPressed = True
                 tmpSelection -= 1
                 if tmpSelection < 1:
                     tmpSelection = 4
                 
-            if(down.value() == 0 and not (keyA.value() == 0 or keyB.value() == 0 or keyX.value() == 0 or keyY.value() == 0) and not buttonLock):
+            if (WasPressed.down(clearQueue=True) or WasPressed.right(clearQueue=True)) and not abxyPressed and not buttonLock:
                 justPressed = True
                 tmpSelection += 1
                 if tmpSelection > 4:
                     tmpSelection = 1
+
                 
-            if(left.value() == 0 and not (keyA.value() == 0 or keyB.value() == 0 or keyX.value() == 0 or keyY.value() == 0) and not buttonLock):
-                justPressed = True
-                tmpSelection -= 1
-                if tmpSelection < 1:
-                    tmpSelection = 4
-            
-            if(right.value() == 0 and not (keyA.value() == 0 or keyB.value() == 0 or keyX.value() == 0 or keyY.value() == 0) and not buttonLock):
-                justPressed = True
-                tmpSelection += 1
-                if tmpSelection > 4:
-                    tmpSelection = 1
-                
-            if(ctrl.value() == 0):
+            if WasPressed.ctrl():
                 selection = tmpSelection
 
 
 
-            if(keyA.value() == 0 or selection==1):
+            if(WasPressed.keyA() or selection==1):
                 tmpSelection = 1
                 selection = 1
                 reset_buttons(self)
@@ -136,7 +110,7 @@ class main_menu():
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[0])*4 - horizontalReserve - 8, 30, options[0], buttonTextColor, buttonColor, horizontalReserve, verticalReserve, buttonBorderColor, buttonBorderThickness, ["", "A", "",""])
                 
 
-            if(keyB.value() == 0 or selection==2):
+            if(WasPressed.keyB() or selection==2):
                 tmpSelection = 2
                 selection = 2
                 reset_buttons(self)
@@ -147,7 +121,7 @@ class main_menu():
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[1])*4 - horizontalReserve - 8, 90, options[1], buttonTextColor, buttonColor, horizontalReserve, verticalReserve, buttonBorderColor, buttonBorderThickness, ["", "B", "",""])
                 
 
-            if(keyX.value() == 0 or selection==3):
+            if(WasPressed.keyX() or selection==3):
                 tmpSelection = 3
                 selection = 3
                 reset_buttons(self)
@@ -158,7 +132,7 @@ class main_menu():
                 self.Tools.make_button(240 - buttonBorderThickness*2 - len(options[2])*4 - horizontalReserve - 8, 150, options[2], buttonTextColor, buttonColor, horizontalReserve, verticalReserve, buttonBorderColor, buttonBorderThickness, ["", "X", "",""])
 
 
-            if(keyY.value() == 0 or selection==4):
+            if(WasPressed.keyY() or selection==4):
                 tmpSelection = 4
                 selection = 4
                 reset_buttons(self)
@@ -213,7 +187,7 @@ def reset_board():
     LCD.fill(0)
     LCD.show()
     freq(125_000_000)
-    soft_reset()
+    print("Clean exit successful.")
 
 
 
@@ -237,6 +211,9 @@ if __name__=='__main__':
     try:
         MainMenu = main_menu()
         MainMenu.mainloop()
-    finally:
-        reset_board()
-        print("Clean exit successful.")
+    except:
+        pass
+
+    reset_board()
+    
+
