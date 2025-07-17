@@ -22,8 +22,8 @@ SD_MOSI = 7
 # initialize buttons:
 keyA = Pin(15,Pin.IN,Pin.PULL_UP)
 keyB = Pin(17,Pin.IN,Pin.PULL_UP)
-keyX = Pin(19 ,Pin.IN,Pin.PULL_UP)
-keyY = Pin(21 ,Pin.IN,Pin.PULL_UP)
+keyX = Pin(19,Pin.IN,Pin.PULL_UP)
+keyY = Pin(21,Pin.IN,Pin.PULL_UP)
 
 up = Pin(2,Pin.IN,Pin.PULL_UP)
 down = Pin(18,Pin.IN,Pin.PULL_UP)
@@ -34,29 +34,57 @@ ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 class Was_Pressed():
     def __init__(self):
         self.registeredPresses = {}
-        # self.lastPressTime = {}
-        self.holdRepetitionDelay = 0.5  # seconds
-        self.holdRepetitionFrequency = 0.2  # seconds
+        self.lastPressTime = {}
+        self.lastReleaseTime = {}
+
+        # Values in ms
+        self.multiClickEliminationDelay = 50
+        self.holdRepetitionDelay = 500
+        self.holdRepetitionFrequency = 200
 
 
-        # Initialize key press handling
-        keyA.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        keyB.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        keyX.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        keyY.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        keyA.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+        keyB.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+        keyX.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+        keyY.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
         
-        up.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        down.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        left.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        right.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
-        ctrl.irq(trigger=Pin.IRQ_FALLING, handler=self.press_handler)
+        up.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+        down.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+        left.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+        right.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+        ctrl.irq(trigger=Pin.IRQ_FALLING | Pin.IRQ_RISING, handler=self.state_handler)
+
+
+    def state_handler(self, pin:Pin):
+        if pin.value() == 0:
+            self.press_handler(pin)
+        else:
+            self.release_handler(pin)
 
 
     def press_handler(self, pin:Pin):
-        if pin in self.registeredPresses.keys():
-            self.registeredPresses[pin] += 1
+        print("pressed")
+        # Eliminate unintentional multi clicks caused by bad buttons
+        if not pin in self.lastReleaseTime.keys():
+            self.lastPressTime[pin] = time.time_ns()
+            if pin in self.registeredPresses.keys():
+                self.registeredPresses[pin] += 1
+            else:
+                self.registeredPresses[pin] = 1
+        elif (time.time_ns() - self.lastReleaseTime[pin]) > (self.multiClickEliminationDelay*1000000):
+            self.lastPressTime[pin] = time.time_ns()
+            if pin in self.registeredPresses.keys():
+                self.registeredPresses[pin] += 1
+            else:
+                self.registeredPresses[pin] = 1
         else:
-            self.registeredPresses[pin] = 1
+            pass
+    
+
+    def release_handler(self, pin:Pin):
+        print("released")
+        self.lastReleaseTime[pin] = time.time_ns()
+        
 
 
     def was_pressed(self, pin:Pin, subtract:bool = True, clearQue:bool = False):
@@ -66,7 +94,7 @@ class Was_Pressed():
             pin (int): The pin number of the button to check.
             subtract (bool): If True, the count of presses in the queue will be decremented by 1 after checking. \n
                              If False, the count will not be changed.
-            clearQue (bool): If True, the count of presses in the queue will be set to 0 after checking. \n
+            clearQue (bool): If True, the count of presses of the selected button pin in the queue will be set to 0 after checking. \n
         Returns:
             bool: True if the button was pressed at least once, False otherwise.
         """
