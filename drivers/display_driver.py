@@ -63,7 +63,6 @@ class Was_Pressed():
 
 
     def press_handler(self, pin:Pin):
-        print("pressed")
         # Eliminate unintentional multi clicks caused by bad buttons
         if not pin in self.lastReleaseTime.keys():
             self.lastPressTime[pin] = time.time_ns()
@@ -82,7 +81,6 @@ class Was_Pressed():
     
 
     def release_handler(self, pin:Pin):
-        print("released")
         self.lastReleaseTime[pin] = time.time_ns()
         
 
