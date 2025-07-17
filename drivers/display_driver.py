@@ -292,7 +292,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.write_cmd(0x29)
 
-    def show(self, record:bool = True):
+    def show(self, record:bool = False):
         """ 
         Arguments:
             record (bool): Set to true if you want to capture the current frame into a file on the SD card if it is available.
