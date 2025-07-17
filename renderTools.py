@@ -9,7 +9,7 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 from FONTS import FONTS
 
 
-class toolset():
+class Toolset():
     def __init__(self, LCD:displayClass):
         self.LCD = LCD
 

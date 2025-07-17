@@ -135,6 +135,8 @@ class LCD_1inch3(framebuf.FrameBuffer):
     def __init__(self):
         self.width = 240
         self.height = 240
+
+        self.WasPressed = Was_Pressed()
         
         self.cs = Pin(CS,Pin.OUT)
         self.rst = Pin(RST,Pin.OUT)
