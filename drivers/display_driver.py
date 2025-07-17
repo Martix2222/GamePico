@@ -166,7 +166,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
     def init_save_location(self):
         try:
-            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 150_000_000)
+            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
             os.mount(SD, self.sdMountPoint)
             SDavailable = True
         except OSError:
@@ -326,7 +326,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         """
 
         try:
-            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 150_000_000)
+            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
             os.mount(SD, self.sdMountPoint)
             SDavailable = True
         except OSError:
