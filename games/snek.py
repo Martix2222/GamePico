@@ -130,8 +130,6 @@ class Snek():
 
     def game_over_screen(self, title="GAME OVER!", titleColor=color(255,0,0), scoreColor=color(255,170,0),
                         introCircleColor=color(255,0,0), backgroundColor=color(255,255,255), introCircleThickness=10):
-    
-        self.LCD.fill(backgroundColor)
         for i in range(1, 170 + introCircleThickness, int(introCircleThickness/2)):
             self.LCD.ellipse(120, 120, i, i, introCircleColor, True)
             if i > 10:
@@ -139,6 +137,9 @@ class Snek():
             if i > 100:
                 self.Tools.center_text(title, 120, 115, titleColor, font=1, size=3)
             self.LCD.show()
+        
+        self.LCD.fill(backgroundColor)
+        self.Tools.center_text(title, 120, 115, titleColor, font=1, size=3)
         self.Tools.center_text("You scored " + str(self.score) + " points!", 120, 140, scoreColor, font=1, size=2)
 
         self.LCD.show()
