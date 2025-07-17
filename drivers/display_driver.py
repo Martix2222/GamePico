@@ -82,7 +82,10 @@ class Was_Pressed():
 
     def release_handler(self, pin:Pin):
         self.lastReleaseTime[pin] = time.time_ns()
-        
+    
+
+    def clear_queue(self):
+        self.registeredPresses = {}
 
 
     def was_pressed(self, pin:Pin, subtract:bool = True, clearQue:bool = False):
@@ -161,12 +164,12 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.sdMountPoint = "/sd"
         self.mainScreenshotFolder = "/screenshots"
-        self.currentRecordingFolder = "/1"
+        self.currentRecordingFolder = "/0"
         self.stillRecording = False
 
     def init_save_location(self):
         try:
-            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
+            SD = SDCard(SPI(0, 125_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
             os.mount(SD, self.sdMountPoint)
             SDavailable = True
         except OSError:
@@ -175,17 +178,22 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         if SDavailable:
             if not self.mainScreenshotFolder[1:] in os.listdir(self.sdMountPoint):
-                os.mkdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder)
+                os.mkdir(self.sdMountPoint + self.mainScreenshotFolder)
+            
             self.currentRecordingFolder = "/" + str(len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder)))
+            os.mkdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder)
+
         else:
             if not self.mainScreenshotFolder[1:] in os.listdir("/"):
                 os.mkdir(self.mainScreenshotFolder)
+            
             self.currentRecordingFolder = "/" + str(len(os.listdir(self.mainScreenshotFolder)))
+            os.mkdir(self.mainScreenshotFolder + self.currentRecordingFolder)
 
-
-        os.umount(self.sdMountPoint)
-        SD.deinit()
-        self.SDcs(1)
+        if SDavailable:
+            os.umount(self.sdMountPoint)
+            SD.deinit()
+            self.SDcs(1)
 
 
     def write_cmd(self, cmd):
@@ -284,7 +292,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.write_cmd(0x29)
 
-    def show(self, record:bool = False):
+    def show(self, record:bool = True):
         """ 
         Arguments:
             record (bool): Set to true if you want to capture the current frame into a file on the SD card if it is available.
@@ -292,9 +300,11 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         if record and self.stillRecording:
             self.screenshot("frame.bin")
+            self.stillRecording = True
         elif record and not self.stillRecording:
             self.init_save_location()
             self.screenshot("frame.bin")
+            self.stillRecording = True
         else:
             self.stillRecording = False
 
@@ -326,7 +336,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         """
 
         try:
-            SD = SDCard(SPI(0, 150_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
+            SD = SDCard(SPI(0, 125_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
             os.mount(SD, self.sdMountPoint)
             SDavailable = True
         except OSError:
@@ -335,17 +345,18 @@ class LCD_1inch3(framebuf.FrameBuffer):
         if SDavailable:        
             prefix = str(len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder)))
         else:
-            prefix = str(len(os.listdir(self.mainScreenshotFolder)))
+            prefix = str(len(os.listdir(self.mainScreenshotFolder + self.currentRecordingFolder)))
 
-
-        with open(self.mainScreenshotFolder + "0"*(4-len(prefix)) + prefix + filename, 'wb') as f:
+        print(f"Saving: {self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(prefix)) + prefix + filename}")
+        with open(self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(prefix)) + prefix + filename, 'xb') as f:
             f.write(self.buffer)
             f.close()
 
-
-        os.umount(self.sdMountPoint)
-        SD.deinit()
-        self.SDcs(1)
+        
+        if SDavailable:
+            os.umount(self.sdMountPoint)
+            SD.deinit()
+            self.SDcs(1)
 
     @staticmethod
     def color(R:int,G:int,B:int): # Convert RGB888 to RGB565
