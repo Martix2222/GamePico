@@ -5,6 +5,8 @@ import framebuf
 
 import renderTools
 
+from games.snek import Snek
+
 import drivers.display_driver as display_driver
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
@@ -37,7 +39,7 @@ class main_menu():
         repeatPressWaitTime = time.time_ns() + buttonRepetition_ns
 
         # Debug variables:
-        enableDebug = True
+        enableDebug = False
         startTime = time.time_ns()
         renderEndTime = time.time_ns()
         showEndTime = time.time_ns()
@@ -160,12 +162,15 @@ class main_menu():
                 return selection
         return
 
-    def mainloop(self):
+    def main_loop(self):
             choice = 0
             while True:
+                LCD.WasPressed.clear_queue()
                 choice = self.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"])
                 if choice == 1:
                     # Play option
+                    snek = Snek(LCD)
+                    snek.game_loop()
                     pass
                 elif choice == 2:
                     # Settings option
@@ -181,8 +186,8 @@ class main_menu():
 if __name__=='__main__':
     gc.collect()
 
-    try:
-        with open("logo 120x61.bin", "rb") as f:
+    # try:
+    with open("logo 120x61.bin", "rb") as f:
             image = bytearray(f.read()[7:])
             f.close()
         LCD.fill(0xffff)
@@ -195,6 +200,9 @@ if __name__=='__main__':
     time.sleep(2)
 
     MainMenu = main_menu()
-    MainMenu.mainloop()
+    MainMenu.main_loop()
+    
+    LCD.fill(LCD.white)
+    LCD.show()
     
 
