@@ -186,8 +186,8 @@ class main_menu():
 if __name__=='__main__':
     gc.collect()
 
-    # try:
-    with open("logo 120x61.bin", "rb") as f:
+    try:
+        with open("logo 120x61.bin", "rb") as f:
             image = bytearray(f.read()[7:])
             f.close()
         LCD.fill(0xffff)
