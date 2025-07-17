@@ -40,28 +40,22 @@ class Snek():
         lastUpdate = time.time_ns()
 
         while(True):
-            while(lastUpdate + updateInterval_ns > time.time_ns()):
-                if(self.LCD.WasPressed.up(clearQueue=True) and not heading == "south" and not heading == "north"):
-                    heading = 'north'
-                    traveledInHeading = 0
-                    break
-                elif(self.LCD.WasPressed.down(clearQueue=True) and not heading == "north" and not heading == "south"):
-                    heading = 'south'
-                    traveledInHeading = 0
-                    break
-                elif(self.LCD.WasPressed.left(clearQueue=True) and not heading == "east" and not heading == "west"):
-                    heading = 'west'
-                    traveledInHeading = 0
-                    break
-                elif(self.LCD.WasPressed.right(clearQueue=True) and not heading == "west" and not heading == "east"):
-                    heading = 'east'
-                    traveledInHeading = 0
-                    break
-
-
-            while(lastUpdate + updateInterval_ns > time.time_ns()): pass
-                
+            time.sleep_ms(max(int((updateInterval_ns - (lastUpdate - time.time_ns()))/1_000_000), 1))
             lastUpdate = time.time_ns()
+
+            if(self.LCD.WasPressed.up(clearQueue=True) and not heading == "south" and not heading == "north"):
+                heading = 'north'
+                traveledInHeading = 0
+            elif(self.LCD.WasPressed.down(clearQueue=True) and not heading == "north" and not heading == "south"):
+                heading = 'south'
+                traveledInHeading = 0
+            elif(self.LCD.WasPressed.left(clearQueue=True) and not heading == "east" and not heading == "west"):
+                heading = 'west'
+                traveledInHeading = 0
+            elif(self.LCD.WasPressed.right(clearQueue=True) and not heading == "west" and not heading == "east"):
+                heading = 'east'
+                traveledInHeading = 0
+
             
             if len(snake) < self.score+5:
                 if heading == "north":
@@ -123,8 +117,8 @@ class Snek():
                 self.score += 1
                 while appleCoords in snake:
                     appleCoords = [random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize, random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize]
-                self.Tools.center_x_text("self.score: " + str(self.score), 120, 1, 0x0000, backgroundColor, 1, 2)
-            self.Tools.center_x_text("self.score: " + str(self.score), 120, 1, 0x0000, -1, 1, 2)
+                self.Tools.center_x_text("score: " + str(self.score), 120, 1, 0x0000, backgroundColor, 1, 2)
+            self.Tools.center_x_text("score: " + str(self.score), 120, 1, 0x0000, -1, 1, 2)
 
             if 240 <= snake[0][0] or snake[0][0] < 0 or 240 <= snake[0][1] or snake[0][1] < 0 or snake[0] in snake[1:]:
                 self.game_over_screen()
@@ -134,7 +128,7 @@ class Snek():
             traveledInHeading += 1
 
 
-    def game_over_screen(self, title="GAME OVER! ", titleColor=color(255,0,0), scoreColor=color(0,255,0),
+    def game_over_screen(self, title="GAME OVER!", titleColor=color(255,0,0), scoreColor=color(255,170,0),
                         introCircleColor=color(255,0,0), backgroundColor=color(255,255,255), introCircleThickness=10):
     
         self.LCD.fill(backgroundColor)
@@ -142,12 +136,12 @@ class Snek():
             self.LCD.ellipse(120, 120, i, i, introCircleColor, True)
             if i > 10:
                 self.LCD.ellipse(120, 120, i - introCircleThickness, i - introCircleThickness, backgroundColor, True)
-            if i > 50:
-                self.Tools.center_text(title, 120, 115, titleColor)
+            if i > 100:
+                self.Tools.center_text(title, 120, 115, titleColor, font=1, size=3)
             self.LCD.show()
-        self.Tools.center_text("You self.scored " + str(self.score) + " points!", 120, 125, scoreColor)
-            
+        self.Tools.center_text("You scored " + str(self.score) + " points!", 120, 140, scoreColor, font=1, size=2)
+
         self.LCD.show()
 
-        time.sleep(3)
+        time.sleep(5)
         return
