@@ -17,7 +17,7 @@ import themes
 theme = themes.Default_theme()
 
 # Overclock
-freq(300_000_000)
+freq(250_000_000)
 
 class main_menu():
     def __init__(self) -> None:
@@ -37,7 +37,7 @@ class main_menu():
         repeatPressWaitTime = time.time_ns() + buttonRepetition_ns
 
         # Debug variables:
-        enableDebug = False
+        enableDebug = True
         startTime = time.time_ns()
         renderEndTime = time.time_ns()
         showEndTime = time.time_ns()
@@ -176,18 +176,6 @@ class main_menu():
                 elif choice == 4:
                     # Controls option
                     pass
-        
-
-def reset_board():
-    # Reset the display and system and revert the overclock
-    # This is essential because without reverting it the
-    # board starts behaving weirdly
-    time.sleep_ms(500)
-    LCD.fill(0)
-    LCD.show()
-    freq(125_000_000)
-    print("Clean exit successful.")
-
 
 
 if __name__=='__main__':
@@ -206,13 +194,7 @@ if __name__=='__main__':
 
     time.sleep(2)
 
-
-    try:
-        MainMenu = main_menu()
-        MainMenu.mainloop()
-    except:
-        pass
-
-    reset_board()
+    MainMenu = main_menu()
+    MainMenu.mainloop()
     
 
