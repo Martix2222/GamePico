@@ -185,15 +185,9 @@ class main_menu():
 
 if __name__=='__main__':
     gc.collect()
+    LCD.fill(0xffff)
 
-    try:
-        with open("logo 120x61.bin", "rb") as f:
-            image = bytearray(f.read()[7:])
-            f.close()
-        LCD.fill(0xffff)
-        LCD.blit(framebuf.FrameBuffer(image, 120, 61, framebuf.RGB565), 60, 90)
-    except:
-        LCD.text("error", 0, 0, 0xffff)
+    LCD.blit_image_file("logo 240x123.bin", 0, 58, 240, 123, 1000)
         
     LCD.show()
 

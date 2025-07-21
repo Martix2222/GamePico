@@ -358,6 +358,48 @@ class LCD_1inch3(framebuf.FrameBuffer):
             SD.deinit()
             self.SDcs(1)
 
+    
+    def blit_image_file(self, filePath:str, x:int, y:int, width:int, height:int, memLimit:int = 1000):
+        """ 
+        This function was added in order to solve problems with insufficient free memory space while loading big images from files.\n
+        It blits an image to the image buffer while it limits memory usage according to the *memLimit* argument.
+        Only if it is set too low, it loads the image at least one line of pixels at a time.
+        Arguments:
+            filePath (str): binary image file encoded in the RGB565 format.
+            x (int): x coordinate of the image
+            y (int): y coordinate of the image
+            width (int): width of the image
+            height (int): height of the image
+            memLimit (int): maximum amount of bytes of memory used to load the image
+        """        
+        fileSize = os.stat(filePath)
+        fileSize = fileSize[6]
+
+        if fileSize == ((width*height*2)+8):
+            blockOffset = 8
+        else:
+            blockOffset = 0
+        
+        blockSize = max(width, (memLimit//(width*2))*width)
+        blockCount = fileSize//(blockSize*2) + min(1, (fileSize-blockOffset)%(blockSize*2))
+        # *2 is in the calculation, because each pixel occupies two bytes
+
+        with open(filePath, "rb") as f:
+            if blockOffset > 0:
+                f.seek(blockOffset-1)
+            
+            for block in range(blockCount):
+                if not ((block+1)*blockSize*2)>(fileSize-blockOffset):
+                    imagePart = bytearray(f.read(int(blockSize*2)))
+                    self.blit(framebuf.FrameBuffer(imagePart, width, blockSize//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
+                else:
+                    imagePartSize = (fileSize-blockOffset) - blockSize*2*block
+                    imagePart = bytearray(f.read(imagePartSize))
+                    self.blit(framebuf.FrameBuffer(imagePart, width, imagePartSize//2//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
+              
+
+            f.close()
+
     @staticmethod
     def color(R:int,G:int,B:int): # Convert RGB888 to RGB565
         """ 
