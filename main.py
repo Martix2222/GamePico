@@ -25,9 +25,9 @@ class Main():
 
         self.theme = themes.Default_theme()
 
-        self.Tools = render_tools.Toolset(self.LCD)
+        self.Tools = self.LCD.Tools
 
-        self.Menus = Menus(self)
+        self.Menus = Menus(self.LCD)
 
     
     def start(self, showSplash = True):

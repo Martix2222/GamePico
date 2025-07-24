@@ -5,15 +5,13 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # The display driver must contain a colour() function to convert 24-bit
 # color space to the color space supported by the display.
 
-from main import Main
 from themes import Default_theme
 
 class Menus():
-    def __init__(self, mainClass:Main):
-        self.LCD = mainClass.LCD
+    def __init__(self, LCD:displayClass):
+        self.LCD = LCD
 
-        self.Tools = mainClass.Tools
-        self.theme = mainClass.theme
+        self.Tools = LCD.Tools
     
     def static_menu(self, title:str="Menu", options:list=["Key A", "Key B", "Key C", "Key D"], theme:Default_theme = Default_theme()):     
         tmpSelection = 0
