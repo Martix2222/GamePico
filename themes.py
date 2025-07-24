@@ -15,6 +15,7 @@ class Default_theme():
         self.button_pressed_color = color(0, 255, 0)
         self.button_border_color = color(0, 0, 0)
         self.button_selected_border_color = color(127, 127, 127)
+        self.button_selected_text_color = color(127, 127, 127)
         self.button_pressed_text_color = color(255, 255, 255)
         self.button_border_thickness = 4
         self.vertical_reserve=10
