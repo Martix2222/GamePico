@@ -49,7 +49,7 @@ class Main():
             choice = 0
             while True:
                 self.LCD.WasPressed.clear_queue()
-                choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], self.theme)
+                choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [12, 20], [100, 51], self.theme)
                 if choice == 1:
                     # Play option
                     snek = Snek(self.LCD)
