@@ -24,10 +24,6 @@ class Snek():
     def game_loop(self, updateInterval_ns:int=250000000, backgroundColor=color(255,255,255), snakeColor=color(240,0,0), stripeColor=color(0,0,0)):
         self.LCD.fill(backgroundColor)
         self.score = 0
-        self.blockSize = 12
-        self.headSize = 2
-        self.eyeSize = 5
-        self.eyeEdgeDistance = 2
 
         heading = "south"
         traveledInHeading = 0
