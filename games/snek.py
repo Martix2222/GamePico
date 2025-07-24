@@ -1,6 +1,6 @@
 import time
 import random
-import renderTools
+import render_tools
 
 from drivers.display_driver import LCD_1inch3 as displayClass
 # The display driver must contain a colour() function to convert 24-bit
@@ -12,7 +12,7 @@ color = displayClass.color
 class Snek():
     def __init__(self, LCD:displayClass):
         self.LCD = LCD
-        self.Tools = renderTools.Toolset(LCD)
+        self.Tools = render_tools.Toolset(LCD)
 
         self.score = 0
         self.blockSize = 12

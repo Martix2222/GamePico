@@ -3,7 +3,7 @@ import time
 import gc
 import framebuf
 
-import renderTools
+import render_tools
 
 from games.snek import Snek
 
@@ -21,9 +21,9 @@ theme = themes.Default_theme()
 # Overclock
 freq(250_000_000)
 
-class main_menu():
+class Main():
     def __init__(self) -> None:
-        self.Tools = renderTools.Toolset(LCD)
+        self.Tools = render_tools.Toolset(LCD)
 
 
     def static_menu(self, title="Menu", options=["Key A", "Key B", "Key C", "Key D"], backgroundColor=theme.background_color, secondaryBackgroundColor=theme.secondary_background_color,
@@ -193,7 +193,7 @@ if __name__=='__main__':
 
     time.sleep(2)
 
-    MainMenu = main_menu()
+    MainMenu = Main()
     MainMenu.main_loop()
     
     LCD.fill(LCD.white)
