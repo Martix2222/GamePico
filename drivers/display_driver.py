@@ -148,7 +148,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.cs(1)
         # self.spi = SPI(1)
         # self.spi = SPI(1,1000_000)
-        self.spi = SPI(1,150_000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
+        self.spi = SPI(1,125_000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
         self.dc = Pin(DC,Pin.OUT)
         self.dc(1)
         self.buffer = bytearray(self.height * self.width * 2)
@@ -161,6 +161,8 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.white =   0xffff
 
         self.Tools = render_tools.Toolset(self)
+
+        self.enableRecording = False
 
         self.SDcs = Pin(SD_CS)
         self.SDcs(1)
@@ -295,16 +297,16 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.write_cmd(0x29)
 
-    def show(self, record:bool = False):
+    def show(self, capture:bool = False):
         """ 
         Arguments:
             record (bool): Set to true if you want to capture the current frame into a file on the SD card if it is available.
         """
 
-        if record and self.stillRecording:
+        if (capture or self.enableRecording) and self.stillRecording:
             self.screenshot("frame.bin")
             self.stillRecording = True
-        elif record and not self.stillRecording:
+        elif (capture or self.enableRecording) and not self.stillRecording:
             self.init_save_location()
             self.screenshot("frame.bin")
             self.stillRecording = True
@@ -389,7 +391,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         with open(filePath, "rb") as f:
             if blockOffset > 0:
-                f.seek(blockOffset-1)
+                f.seek(blockOffset)
             
             for block in range(blockCount):
                 if not ((block+1)*blockSize*2)>(fileSize-blockOffset):
@@ -404,7 +406,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
             f.close()
 
     @staticmethod
-    def color(R:int,G:int,B:int): # Convert RGB888 to RGB565
+    def color(R:int,G:int,B:int):
         """ 
         Converts the 24-bit color format to the 16-bit color format supported by the display.
         """
