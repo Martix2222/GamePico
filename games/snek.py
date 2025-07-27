@@ -36,7 +36,8 @@ class Snek():
         lastUpdate = time.time_ns()
 
         while(True):
-            time.sleep_ms(max(int((updateInterval_ns - (lastUpdate - time.time_ns()))/1_000_000), 1))
+            print(f"sleep for {max(int((updateInterval_ns - (time.time_ns()-lastUpdate))/1000000), 1)} ms")
+            time.sleep_ms(max(int((updateInterval_ns - (time.time_ns()-lastUpdate))/1000000), 1))
             lastUpdate = time.time_ns()
 
             if(self.LCD.WasPressed.up(clearQueue=True) and not heading == "south" and not heading == "north"):
@@ -120,8 +121,8 @@ class Snek():
                 self.game_over_screen()
                 return 1
 
-            self.LCD.show()
             traveledInHeading += 1
+            self.LCD.show()
 
 
     def game_over_screen(self, title="GAME OVER!", titleColor=color(255,0,0), scoreColor=color(255,170,0),
