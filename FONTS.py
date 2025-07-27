@@ -293,6 +293,14 @@ class FONTS():
             self.character(asci,xx,yy,size,color)
             xx = xx + move
 
+    @staticmethod
+    def calculate_text_dimensions(string:str, fontSize):
+        characterWidth = 6*fontSize - int(fontSize/2)
+        ySize = (characterWidth+fontSize+1)
+        xSize = (characterWidth*len(string)-int((fontSize+1)/2))
+
+        return [xSize, ySize]
+
 # def cntr_st(LCD:displayType,s,y,size,color): # Centres text on line y
 #     width = 6*size - int(size/2)
 #     gap = int((self.LCD.width - len(s) * width)/2)
