@@ -408,7 +408,16 @@ class LCD_1inch3(framebuf.FrameBuffer):
         """ 
         Converts the 24-bit color format to the 16-bit color format supported by the display.
         """
-        return (((G&0b00011100)<<3) + ((B&0b11111000)>>3)<<8) + (R&0b11111000) + ((G&0b11100000)>>5)
+        # Convert RGB888 to RGB565
+        r5 = (R * 31) // 255           # 5‑bit red
+        g6 = (G * 63) // 255           # 6‑bit green
+        b5 = (B * 31) // 255           # 5‑bit blue
+
+        # Pack into 16 bits (2 bytes): RRRRRGGGGGGBBBBB
+        convertedColor = (r5 << 11) | (g6 << 5) | b5
+
+        # Switch the two bytes around to circumvent color handling bug in framebuf library
+        return ((convertedColor & 0x00ff) << 8) | ((convertedColor & 0xff00)>>8)
     
     @staticmethod
     def set_brightness(brightness:float):
