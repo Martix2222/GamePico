@@ -6,6 +6,7 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # color space to the color space supported by the display.
 
 from themes import Default_theme
+from FONTS import FONTS
 
 class Menus():
     def __init__(self, LCD:displayClass):
@@ -42,9 +43,11 @@ class Menus():
             Tools.update_animated_background(0, theme.background_color, theme.secondary_background_color)
 
             # Draw the title
-            LCD.fill_rect(15,105,20 + len(title)*8,30, theme.button_border_color)
-            LCD.fill_rect(20,110,10 + len(title)*8,20,theme.secondary_color)
-            Tools.center_text(title, 25 + len(title)*4, 120, theme.title_text_color,theme.secondary_color, 1, 2)
+            titlePosition = [5, 100]
+            titleTextDimensions = Tools.calculate_text_dimensions(title, 1, 2)
+            self.LCD.fill_rect(titlePosition[0], titlePosition[1], titleTextDimensions[0]+theme.horizontal_reserve*4, titleTextDimensions[1]+theme.vertical_reserve*4//2, theme.button_border_color)
+            self.LCD.fill_rect(titlePosition[0]+theme.horizontal_reserve, titlePosition[1]+theme.vertical_reserve//2, titleTextDimensions[0]+theme.horizontal_reserve*2, titleTextDimensions[1]+theme.vertical_reserve*2//2, theme.secondary_color)
+            Tools.display_text(title, titlePosition[0]+theme.horizontal_reserve*2, titlePosition[1]+theme.vertical_reserve*2//2, theme.title_text_color,theme.secondary_color, 1, 2)
             
             if enableDebug:
                 # Draw debug stats
