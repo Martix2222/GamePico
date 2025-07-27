@@ -10,6 +10,7 @@ class Default_theme():
         self.secondary_color = color(90, 90, 90)
         self.background_color = color(255, 255, 255)
         self.secondary_background_color = color(200, 200, 200)
+        self.title_text_color = color(255, 255, 255)
         self.text_color = color(0, 0, 0)
         self.button_color = color(240, 50, 40)
         self.button_pressed_color = color(0, 255, 0)

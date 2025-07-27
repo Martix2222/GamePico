@@ -44,7 +44,7 @@ class Menus():
             # Draw the title
             LCD.fill_rect(15,105,20 + len(title)*8,30, theme.button_border_color)
             LCD.fill_rect(20,110,10 + len(title)*8,20,theme.secondary_color)
-            Tools.center_text(title, 25 + len(title)*4, 120, 0xFFFF,theme.secondary_color)
+            Tools.center_text(title, 25 + len(title)*4, 120, theme.title_text_color,theme.secondary_color, 1, 2)
             
             if enableDebug:
                 # Draw debug stats
