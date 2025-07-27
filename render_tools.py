@@ -24,7 +24,7 @@ class Toolset():
             self.UPSavailable = False
 
 
-    def calculate_displayed_text_dimensions(self, string, font, size):
+    def calculate_text_dimensions(self, string, font, size):
         """ 
         Calculates the dimensions of rendered text based on it's length, font and size.  
         """
@@ -42,7 +42,7 @@ class Toolset():
                 self.LCD.fill_rect(x, y,len(string)*8, 8,backgroundColor)
             self.LCD.text(string, x, y, color)
         else:
-            xSize, ySize = self.calculate_displayed_text_dimensions(string, font, size)
+            xSize, ySize = self.calculate_text_dimensions(string, font, size)
 
             if backgroundColor > -1:
                 self.LCD.fill_rect(x, y, xSize, ySize, backgroundColor)
@@ -60,7 +60,7 @@ class Toolset():
                 self.LCD.fill_rect(x - len(string) * 4, y-4,len(string)*8, 8,backgroundColor)
             self.LCD.text(string, x - len(string) * 4, y-4, color)
         else:
-            xSize, ySize = self.calculate_displayed_text_dimensions(string, font, size)
+            xSize, ySize = self.calculate_text_dimensions(string, font, size)
 
             if backgroundColor > -1:
                 self.LCD.fill_rect(x - int(xSize/2), y - int(ySize/2), xSize, ySize,backgroundColor)
@@ -78,7 +78,7 @@ class Toolset():
                 self.LCD.fill_rect(x, y-4, len(string)*8, 8,backgroundColor)
             self.LCD.text(string, x , y-4, color)
         else:
-            xSize, ySize = self.calculate_displayed_text_dimensions(string, font, size)
+            xSize, ySize = self.calculate_text_dimensions(string, font, size)
 
             if backgroundColor > -1:
                 self.LCD.fill_rect(x, y - int(ySize/2), xSize, ySize,backgroundColor)
@@ -96,7 +96,7 @@ class Toolset():
                 self.LCD.fill_rect(x - len(string) * 4, y, len(string)*8, 8,backgroundColor)
             self.LCD.text(string, x - len(string) * 4, y, color)
         else:
-            xSize, ySize = self.calculate_displayed_text_dimensions(string, font, size)
+            xSize, ySize = self.calculate_text_dimensions(string, font, size)
 
             if backgroundColor > -1:
                 self.LCD.fill_rect(x - int(xSize/2), y, xSize, ySize,backgroundColor)
