@@ -31,6 +31,7 @@ class Main():
 
     
     def start(self, showSplash = True):
+        self.LCD.set_brightness(100)
         if showSplash:
             self.LCD.fill(0xffff)
 
@@ -43,13 +44,11 @@ class Main():
         self.main_loop()
 
 
-
-
     def main_loop(self):
             choice = 0
             while True:
                 self.LCD.WasPressed.clear_queue()
-                choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [12, 20], [100, 51], self.theme)
+                choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51], self.theme)
                 if choice == 1:
                     # Play option
                     snek = Snek(self.LCD)
