@@ -15,7 +15,7 @@ class Menus():
 
         self.Tools = LCD.Tools
     
-    def static_menu(self, title:str="Menu", options:list=["Key A", "Key B", "Key C", "Key D"], logoPath:str="", logoPos:list=[0,0], logoDim = [0,0], theme:Default_theme = Default_theme()):     
+    def static_menu(self, title:str="Menu", options:list=["Key A", "Key B", "Key C", "Key D"], logoPath:str="", logoPos:list=[0,0], logoDim = [0,0], theme:Default_theme = Default_theme(), enableDebug = False):     
         Tools = self.Tools
         LCD = self.LCD
         
@@ -23,7 +23,6 @@ class Menus():
         selection = 0
 
         # Debug variables:
-        enableDebug = False
         startTime = time.time_ns()
         renderEndTime = time.time_ns()
         showEndTime = time.time_ns()
