@@ -12,7 +12,7 @@ color = displayClass.color
 class Snek():
     def __init__(self, LCD:displayClass):
         self.LCD = LCD
-        self.Tools = render_tools.Toolset(LCD)
+        self.Tools = LCD.Tools
 
         self.score = 0
         self.blockSize = 12
@@ -21,7 +21,7 @@ class Snek():
         self.eyeEdgeDistance = 2
 
 
-    def game_loop(self, updateInterval_ns:int=250000000, backgroundColor=color(255,255,255), snakeColor=color(240,0,0), stripeColor=color(0,0,0)):
+    def game_loop(self, updateInterval_ms:int=250, backgroundColor=color(255,255,255), snakeColor=color(240,0,0), stripeColor=color(0,0,0)):
         self.LCD.fill(backgroundColor)
         self.score = 0
 
@@ -36,8 +36,7 @@ class Snek():
         lastUpdate = time.time_ns()
 
         while(True):
-            print(f"sleep for {max(int((updateInterval_ns - (time.time_ns()-lastUpdate))/1000000), 1)} ms")
-            time.sleep_ms(max(int((updateInterval_ns - (time.time_ns()-lastUpdate))/1000000), 1))
+            time.sleep_ms(max(int(updateInterval_ms - ((time.time_ns()-lastUpdate))/1000000), 1))
             lastUpdate = time.time_ns()
 
             if(self.LCD.WasPressed.up(clearQueue=True) and not heading == "south" and not heading == "north"):
@@ -122,7 +121,7 @@ class Snek():
                 return 1
 
             traveledInHeading += 1
-            self.LCD.show()
+            self.LCD.show(forceMinimumDuplicates=updateInterval_ms//self.LCD.frameTime_ms-1)
 
 
     def game_over_screen(self, title="GAME OVER!", titleColor=color(255,0,0), scoreColor=color(255,170,0),
@@ -140,6 +139,6 @@ class Snek():
         self.Tools.center_text("You scored " + str(self.score) + " points!", 120, 140, scoreColor, font=1, size=2)
 
         self.LCD.show()
-
         time.sleep(5)
+        self.LCD.show()
         return

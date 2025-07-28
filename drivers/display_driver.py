@@ -2,6 +2,7 @@ from machine import Pin,SPI,PWM
 import framebuf
 import time
 import os
+import gc
 from drivers.sdcard_driver import SDCard
 import render_tools
 
@@ -162,7 +163,11 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.Tools = render_tools.Toolset(self)
 
-        self.enableRecording = False
+        self.enableContinuousRecording = False
+
+        # This is currently mostly for reference and sets the time between frames when recording.
+        # This value should be set as the frame time when exporting the recording as a GIF.
+        self.frameTime_ms = 50
 
         self.SDcs = Pin(SD_CS)
         self.SDcs(1)
@@ -297,22 +302,11 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.write_cmd(0x29)
 
-    def show(self, capture:bool = False):
+    def show(self, capture:bool = False, forceMinimumDuplicates=0):
         """ 
         Arguments:
             record (bool): Set to true if you want to capture the current frame into a file on the SD card if it is available.
         """
-
-        if (capture or self.enableRecording) and self.stillRecording:
-            self.screenshot("frame.bin")
-            self.stillRecording = True
-        elif (capture or self.enableRecording) and not self.stillRecording:
-            self.init_save_location()
-            self.screenshot("frame.bin")
-            self.stillRecording = True
-        else:
-            self.stillRecording = False
-
         self.write_cmd(0x2A)
         self.write_data(0x00)
         self.write_data(0x00)
@@ -333,12 +327,24 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.spi.write(self.buffer)
         self.cs(1)
 
-    def screenshot(self, filename):
+        if (capture or self.enableContinuousRecording) and self.stillRecording:
+            self.screenshot("frame.bin", max(forceMinimumDuplicates, (((time.time_ns() - self.lastCaptureTime)//1000000)//self.frameTime_ms)-1))
+            self.lastCaptureTime = time.time_ns()
+        elif (capture or self.enableContinuousRecording) and not self.stillRecording:
+            self.init_save_location()
+            self.screenshot("frame.bin")
+            self.stillRecording = True
+            self.lastCaptureTime = time.time_ns()
+        else:
+            self.stillRecording = False
+
+    def screenshot(self, fileName, duplicateCount = 0):
         """ 
         Save the current display buffer to a .bin file.
         Arguments:
             filename (str): The name of the file to save the screenshot to.
         """
+        gc.collect()
 
         try:
             SD = SDCard(SPI(0, 125_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
@@ -348,14 +354,24 @@ class LCD_1inch3(framebuf.FrameBuffer):
             SDavailable = False
 
         if SDavailable:        
-            prefix = str(len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder)))
+            prefix = len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder))
         else:
-            prefix = str(len(os.listdir(self.mainScreenshotFolder + self.currentRecordingFolder)))
+            prefix = len(os.listdir(self.mainScreenshotFolder + self.currentRecordingFolder))
 
-        print(f"Saving: {self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(prefix)) + prefix + filename}")
-        with open(self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(prefix)) + prefix + filename, 'xb') as f:
+        lastUpdatedFramePath = self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(str(prefix))) + str(prefix) + fileName
+
+        print(f"Saving: {lastUpdatedFramePath}")
+        with open(lastUpdatedFramePath, 'xb') as f:
             f.write(self.buffer)
             f.close()
+
+        for i in range(duplicateCount):
+            prefix += 1
+            copyFilePath = self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(str(prefix))) + str(prefix) + fileName
+            print(f"Copy: {copyFilePath}")
+            with open(copyFilePath, 'xb') as f:
+                f.write(self.buffer)
+                f.close()
 
         
         if SDavailable:

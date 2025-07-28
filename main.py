@@ -30,16 +30,17 @@ class Main():
         self.Menus = Menus(self.LCD)
 
     
-    def start(self, showSplash = True):
+    def start(self, showSplash = True, recordSession = False):
         self.LCD.set_brightness(100)
+        self.LCD.enableContinuousRecording = recordSession
         if showSplash:
             self.LCD.fill(0xffff)
 
             self.LCD.blit_image_file("logo 240x123.bin", 0, 58, 240, 123, 1000)
             
             self.LCD.show()
-
             time.sleep(2)
+            self.LCD.show()
 
         self.main_loop()
 
