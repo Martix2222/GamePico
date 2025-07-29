@@ -2,8 +2,6 @@ from machine import freq
 import time
 import gc
 
-import render_tools
-
 from games.snek import Snek
 
 import drivers.display_driver as display_driver
@@ -56,7 +54,6 @@ class Main():
                     snek.game_loop()
                     pass
                 elif choice == 2:
-                    # Settings option
                     pass
                 elif choice == 3:
                     # Exit option - break out of the loop

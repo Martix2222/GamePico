@@ -6,7 +6,6 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # color space to the color space supported by the display.
 
 from themes import Default_theme
-from FONTS import FONTS
 
 class Menus():
     def __init__(self, LCD:displayClass):
@@ -29,11 +28,11 @@ class Menus():
 
         LCD.fill(theme.background_color)
 
-        def reset_buttons(self):
-            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "A", "",""])
-            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "B", "",""])
-            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "X", "",""])
-            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "Y", "",""])
+        def reset_buttons(theme:Default_theme):
+            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme, ["", "A", "",""])
+            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme, ["", "B", "",""])
+            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme, ["", "X", "",""])
+            Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme, ["", "Y", "",""])
 
 
         while(True):
@@ -94,45 +93,45 @@ class Menus():
             if(LCD.WasPressed.keyA() or selection==1):
                 tmpSelection = 1
                 selection = 1
-                reset_buttons(self)
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme.button_pressed_text_color, theme.button_pressed_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "A", "",""])
+                reset_buttons(theme)
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme, ["", "A", "",""], 2)
             elif tmpSelection == 1:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme.button_selected_text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "A", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme, ["", "A", "",""], 1)
             else:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "A", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[0])*4 - theme.horizontal_reserve - 8, 30, options[0], theme, ["", "A", "",""])
                 
 
             if(LCD.WasPressed.keyB() or selection==2):
                 tmpSelection = 2
                 selection = 2
-                reset_buttons(self)
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme.button_pressed_text_color, theme.button_pressed_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "B", "",""])
+                reset_buttons(theme)
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme, ["", "B", "",""], 2)
             elif tmpSelection == 2:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme.button_selected_text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "B", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme, ["", "B", "",""], 1)
             else:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "B", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[1])*4 - theme.horizontal_reserve - 8, 90, options[1], theme, ["", "B", "",""])
                 
 
             if(LCD.WasPressed.keyX() or selection==3):
                 tmpSelection = 3
                 selection = 3
-                reset_buttons(self)
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme.button_pressed_text_color, theme.button_pressed_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "X", "",""])
+                reset_buttons(theme)
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme, ["", "X", "",""], 2)
             elif tmpSelection == 3:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme.button_selected_text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "X", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme, ["", "X", "",""], 1)
             else:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "X", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[2])*4 - theme.horizontal_reserve - 8, 150, options[2], theme, ["", "X", "",""])
 
 
             if(LCD.WasPressed.keyY() or selection==4):
                 tmpSelection = 4
                 selection = 4
-                reset_buttons(self)
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme.button_pressed_text_color, theme.button_pressed_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "Y", "",""])
+                reset_buttons(theme)
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme, ["", "Y", "",""], 2)
             elif tmpSelection == 4:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme.button_selected_text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_selected_border_color, theme.button_border_thickness, ["", "Y", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme, ["", "Y", "",""], 1)
             else:
-                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme.text_color, theme.button_color, theme.horizontal_reserve, theme.vertical_reserve, theme.button_border_color, theme.button_border_thickness, ["", "Y", "",""])
+                Tools.make_button(240 - theme.button_border_thickness*2 - len(options[3])*4 - theme.horizontal_reserve - 8, 210, options[3], theme, ["", "Y", "",""])
 
             renderEndTime = time.time_ns()
 

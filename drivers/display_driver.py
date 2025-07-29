@@ -135,7 +135,6 @@ class Was_Pressed():
         return self.was_pressed(ctrl, subtract, clearQueue)
 
 
-
 class LCD_1inch3(framebuf.FrameBuffer):
     def __init__(self):
         self.width = 240
@@ -405,21 +404,21 @@ class LCD_1inch3(framebuf.FrameBuffer):
         blockCount = fileSize//(blockSize*2) + min(1, (fileSize-blockOffset)%(blockSize*2))
         # *2 is in the calculation, because each pixel occupies two bytes
 
-        with open(filePath, "rb") as f:
+        with open(filePath, "rb") as imageFile:
             if blockOffset > 0:
-                f.seek(blockOffset)
+                imageFile.seek(blockOffset)
             
             for block in range(blockCount):
                 if not ((block+1)*blockSize*2)>(fileSize-blockOffset):
-                    imagePart = bytearray(f.read(int(blockSize*2)))
+                    imagePart = bytearray(imageFile.read(int(blockSize*2)))
                     self.blit(framebuf.FrameBuffer(imagePart, width, blockSize//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
                 else:
                     imagePartSize = (fileSize-blockOffset) - blockSize*2*block
-                    imagePart = bytearray(f.read(imagePartSize))
+                    imagePart = bytearray(imageFile.read(imagePartSize))
                     self.blit(framebuf.FrameBuffer(imagePart, width, imagePartSize//2//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
               
 
-            f.close()
+            imageFile.close()
 
     @staticmethod
     def color(R:int,G:int,B:int):

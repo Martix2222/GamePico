@@ -7,6 +7,7 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # color space to the color space supported by the display.
 
 from FONTS import FONTS
+from themes import Default_theme as themeClass
 
 
 class Toolset():
@@ -140,18 +141,14 @@ class Toolset():
         return
 
 
-    def make_button(self, x:int, y:int, text:str, textColor:int, buttonColor:int, horizontalReserve:int, verticalReserve:int, borderColor:int, borderThickness:int, borderText:list=["", "", "",""], borderTextColor:int=0xFFFF):
+    def make_button(self, x:int, y:int, text:str, theme:themeClass, borderText:list=["", "", "",""], state:int = 0):
         """
         Creates a button with it's center at the given *x* and *y* coordinates\n
-        *text* sets the main text of the button\n
-        *textColor* sets the color of the main text\n
-        *buttonColor* sets the color of the button\n
-        *verticalReserve* sets the vertical space between the  main text and the border on both sides\n
-        *horizontalReserve* sets the horizontal space between the  main text and the border on both sides\n
-        *borderColor* sets the color of the border\n
-        *borderThickness* sets the thickness of the border\n
-        *borderText* is a list that sets the text inside each of the border sides "[top, right, bottom, left]"\n
-        *borderTextColor* sets the color of the border text
+        Arguments:
+            text (str): sets the main text of the button
+            theme (themeClass): theme that determines the look of the button
+            borderText (list): List with four items determining the text displayed on each edge of the button
+            state (int): The state of the button:\n 0 = default; 1 = selected; 2 = pressed
         """
         topBorderReserve = 0
         rightBorderReserve = 0
@@ -161,24 +158,45 @@ class Toolset():
         if len(borderText) != 4:
             raise ValueError("borderText must be a list with 4 elements [top, right, bottom, left], each element being a string that can be empty")
         elif len(borderText[0]) > 0:
-            topBorderReserve = 8 + borderThickness
+            topBorderReserve = 8 + theme.button_border_thickness
         elif len(borderText[1]) > 0:
-            rightBorderReserve = len(borderText[1])*8 + borderThickness
+            rightBorderReserve = len(borderText[1])*8 + theme.button_border_thickness
         elif len(borderText[2]) > 0:
-            bottomBorderReserve = 8  + borderThickness
+            bottomBorderReserve = 8  + theme.button_border_thickness
         elif len(borderText[3]) > 0:
-            leftBorderReserve = len(borderText[3])*8 + borderThickness
-        
-        self.LCD.fill_rect(x - len(text)*4 - horizontalReserve - borderThickness - leftBorderReserve, y - 4 - verticalReserve - borderThickness - topBorderReserve,
-                    len(text)*8 + horizontalReserve*2 + borderThickness*2 + rightBorderReserve + leftBorderReserve, 8 + verticalReserve*2 + borderThickness*2 + bottomBorderReserve + topBorderReserve, borderColor)
+            leftBorderReserve = len(borderText[3])*8 + theme.button_border_thickness
 
-        self.LCD.fill_rect(x - len(text)*4 - horizontalReserve, y - 4 - verticalReserve, len(text)*8 + horizontalReserve*2, 8 + verticalReserve*2, buttonColor)
+        borderColor = theme.button_border_color
+        textColor = theme.text_color
+        buttonColor = theme.button_color
+        borderTextColor = theme.button_border_text_color
+        borderThickness = theme.button_border_thickness
+
+
+        if state == 1:
+            borderColor = theme.button_selected_border_color
+            textColor = theme.button_selected_text_color
+            buttonColor = theme.button_color
+            borderTextColor = theme.button_border_text_color
+            borderThickness = theme.button_border_thickness
+        elif state == 2:
+            borderColor = theme.button_selected_border_color
+            textColor = theme.button_pressed_text_color
+            buttonColor = theme.button_pressed_color
+            borderTextColor = theme.button_border_text_color
+            borderThickness = theme.button_border_thickness
+        
+        
+        self.LCD.fill_rect(x - len(text)*4 - theme.horizontal_reserve - borderThickness - leftBorderReserve, y - 4 - theme.vertical_reserve - borderThickness - topBorderReserve,
+                    len(text)*8 + theme.horizontal_reserve*2 + borderThickness*2 + rightBorderReserve + leftBorderReserve, 8 + theme.vertical_reserve*2 + borderThickness*2 + bottomBorderReserve + topBorderReserve, borderColor)
+
+        self.LCD.fill_rect(x - len(text)*4 - theme.horizontal_reserve, y - 4 - theme.vertical_reserve, len(text)*8 + theme.horizontal_reserve*2, 8 + theme.vertical_reserve*2, buttonColor)
         self.center_text(text, x, y, textColor)
 
-        self.center_text(borderText[0], x, y - 8 - verticalReserve - borderThickness, borderTextColor)
-        self.center_y_text(borderText[1], x + len(text)*4 + horizontalReserve + borderThickness, y, borderTextColor)
-        self.center_text(borderText[2], x, y + 8 + verticalReserve + borderThickness, borderTextColor)
-        self.center_y_text(borderText[3], x - len(text)*4 - horizontalReserve - borderThickness, y, borderTextColor)
+        self.center_text(borderText[0], x, y - 8 - theme.vertical_reserve - borderThickness, borderTextColor)
+        self.center_y_text(borderText[1], x + len(text)*4 + theme.horizontal_reserve + borderThickness, y, borderTextColor)
+        self.center_text(borderText[2], x, y + 8 + theme.vertical_reserve + borderThickness, borderTextColor)
+        self.center_y_text(borderText[3], x - len(text)*4 - theme.horizontal_reserve - borderThickness, y, borderTextColor)
         
         return
 
