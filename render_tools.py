@@ -134,7 +134,7 @@ class Toolset():
 
 
     def scene_circle_transition(self, x:int, y:int, circleColor:int, resultColor:int, circleThickness:int=20, step=4):
-        for i in range(1,170 + circleThickness + int(math.sqrt((120-x)*(120-x)+(120-y)*(120-y))), step):
+        for i in range(1,170 + circleThickness + int(math.sqrt((120-x)*(120-x)+(120-y)*(120-y)) + 3), step):
             self.LCD.ellipse(x, y, i, i, circleColor, True)
             if i>circleThickness: self.LCD.ellipse(x, y, i-circleThickness, i-circleThickness, resultColor, True)
             self.LCD.show()
@@ -282,4 +282,3 @@ class Toolset():
             elif blueBackgroundComponent == 255 and greenBackgroundComponent == 0 and redBackgroundComponent < 255:
                 self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 redBackgroundComponent += 1
-                
