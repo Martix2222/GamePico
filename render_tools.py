@@ -178,13 +178,11 @@ class Toolset():
             textColor = theme.button_selected_text_color
             buttonColor = theme.button_color
             borderTextColor = theme.button_border_text_color
-            borderThickness = theme.button_border_thickness
         elif state == 2:
             borderColor = theme.button_selected_border_color
             textColor = theme.button_pressed_text_color
             buttonColor = theme.button_pressed_color
             borderTextColor = theme.button_border_text_color
-            borderThickness = theme.button_border_thickness
         
         
         self.LCD.fill_rect(x - len(text)*4 - theme.horizontal_reserve - borderThickness - leftBorderReserve, y - 4 - theme.vertical_reserve - borderThickness - topBorderReserve,
@@ -199,6 +197,28 @@ class Toolset():
         self.center_y_text(borderText[3], x - len(text)*4 - theme.horizontal_reserve - borderThickness, y, borderTextColor)
         
         return
+    
+
+    def calculate_button_dimensions(self, text:str, theme:themeClass, borderText:list=["", "", "",""]) -> list:
+        topBorderReserve = 0
+        rightBorderReserve = 0
+        bottomBorderReserve = 0
+        leftBorderReserve = 0
+
+        if len(borderText) != 4:
+            raise ValueError("borderText must be a list with 4 elements [top, right, bottom, left], each element being a string that can be empty")
+        elif len(borderText[0]) > 0:
+            topBorderReserve = 8 + theme.button_border_thickness
+        elif len(borderText[1]) > 0:
+            rightBorderReserve = len(borderText[1])*8 + theme.button_border_thickness
+        elif len(borderText[2]) > 0:
+            bottomBorderReserve = 8  + theme.button_border_thickness
+        elif len(borderText[3]) > 0:
+            leftBorderReserve = len(borderText[3])*8 + theme.button_border_thickness
+
+        borderThickness = theme.button_border_thickness
+
+        return [len(text)*8 + theme.horizontal_reserve*2 + borderThickness*2 + rightBorderReserve + leftBorderReserve, 8 + theme.vertical_reserve*2 + borderThickness*2 + bottomBorderReserve + topBorderReserve]
 
 
     def draw_battery_statistics(self, x:int, y:int, titleColor:int, borderColor:int, backgroundColor:int, textColor:int):

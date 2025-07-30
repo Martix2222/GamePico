@@ -4,7 +4,6 @@ import time
 import os
 import gc
 from drivers.sdcard_driver import SDCard
-import render_tools
 
 
 # Display pins
@@ -159,8 +158,6 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.green =   0x001f
         self.blue  =   0xf800
         self.white =   0xffff
-
-        self.Tools = render_tools.Toolset(self)
 
         self.enableContinuousRecording = False
 

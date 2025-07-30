@@ -8,6 +8,8 @@ import drivers.display_driver as display_driver
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
+from render_tools import Toolset
+
 import themes
 
 from menus import Menus
@@ -19,13 +21,12 @@ class Main():
     def __init__(self) -> None:
         # Initialize the display
         self.LCD = display_driver.LCD_1inch3()
+
         self.color = display_driver.LCD_1inch3.color
 
         self.theme = themes.Default_theme()
 
-        self.Tools = self.LCD.Tools
-
-        self.Menus = Menus(self.LCD)
+        self.Menus = Menus(self.LCD, self.theme)
 
     
     def start(self, showSplash = True, recordSession = False):
@@ -47,7 +48,7 @@ class Main():
             choice = 0
             while True:
                 self.LCD.WasPressed.clear_queue()
-                choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51], self.theme)
+                choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51])
                 if choice == 1:
                     # Play option
                     snek = Snek(self.LCD)
