@@ -25,7 +25,7 @@ class Toolset():
             self.UPSavailable = False
 
 
-    def calculate_text_dimensions(self, string, font, size):
+    def calculate_text_dimensions(self, string:str, font:int, size:int=0) -> list[int]:
         """ 
         Calculates the dimensions of rendered text based on it's length, font and size.  
         """
@@ -141,86 +141,6 @@ class Toolset():
         return
 
 
-    def make_button(self, x:int, y:int, text:str, theme:themeClass, borderText:list=["", "", "",""], state:int = 0):
-        """
-        Creates a button with it's center at the given *x* and *y* coordinates\n
-        Arguments:
-            text (str): sets the main text of the button
-            theme (themeClass): theme that determines the look of the button
-            borderText (list): List with four items determining the text displayed on each edge of the button
-            state (int): The state of the button:\n 0 = default; 1 = selected; 2 = pressed
-        """
-        topBorderReserve = 0
-        rightBorderReserve = 0
-        bottomBorderReserve = 0
-        leftBorderReserve = 0
-
-        if len(borderText) != 4:
-            raise ValueError("borderText must be a list with 4 elements [top, right, bottom, left], each element being a string that can be empty")
-        elif len(borderText[0]) > 0:
-            topBorderReserve = 8 + theme.button_border_thickness
-        elif len(borderText[1]) > 0:
-            rightBorderReserve = len(borderText[1])*8 + theme.button_border_thickness
-        elif len(borderText[2]) > 0:
-            bottomBorderReserve = 8  + theme.button_border_thickness
-        elif len(borderText[3]) > 0:
-            leftBorderReserve = len(borderText[3])*8 + theme.button_border_thickness
-
-        borderColor = theme.button_border_color
-        textColor = theme.text_color
-        buttonColor = theme.button_color
-        borderTextColor = theme.button_border_text_color
-        borderThickness = theme.button_border_thickness
-
-
-        if state == 1:
-            borderColor = theme.button_selected_border_color
-            textColor = theme.button_selected_text_color
-            buttonColor = theme.button_color
-            borderTextColor = theme.button_border_text_color
-        elif state == 2:
-            borderColor = theme.button_selected_border_color
-            textColor = theme.button_pressed_text_color
-            buttonColor = theme.button_pressed_color
-            borderTextColor = theme.button_border_text_color
-        
-        
-        self.LCD.fill_rect(x - len(text)*4 - theme.horizontal_reserve - borderThickness - leftBorderReserve, y - 4 - theme.vertical_reserve - borderThickness - topBorderReserve,
-                    len(text)*8 + theme.horizontal_reserve*2 + borderThickness*2 + rightBorderReserve + leftBorderReserve, 8 + theme.vertical_reserve*2 + borderThickness*2 + bottomBorderReserve + topBorderReserve, borderColor)
-
-        self.LCD.fill_rect(x - len(text)*4 - theme.horizontal_reserve, y - 4 - theme.vertical_reserve, len(text)*8 + theme.horizontal_reserve*2, 8 + theme.vertical_reserve*2, buttonColor)
-        self.center_text(text, x, y, textColor)
-
-        self.center_text(borderText[0], x, y - 8 - theme.vertical_reserve - borderThickness, borderTextColor)
-        self.center_y_text(borderText[1], x + len(text)*4 + theme.horizontal_reserve + borderThickness, y, borderTextColor)
-        self.center_text(borderText[2], x, y + 8 + theme.vertical_reserve + borderThickness, borderTextColor)
-        self.center_y_text(borderText[3], x - len(text)*4 - theme.horizontal_reserve - borderThickness, y, borderTextColor)
-        
-        return
-    
-
-    def calculate_button_dimensions(self, text:str, theme:themeClass, borderText:list=["", "", "",""]) -> list:
-        topBorderReserve = 0
-        rightBorderReserve = 0
-        bottomBorderReserve = 0
-        leftBorderReserve = 0
-
-        if len(borderText) != 4:
-            raise ValueError("borderText must be a list with 4 elements [top, right, bottom, left], each element being a string that can be empty")
-        elif len(borderText[0]) > 0:
-            topBorderReserve = 8 + theme.button_border_thickness
-        elif len(borderText[1]) > 0:
-            rightBorderReserve = len(borderText[1])*8 + theme.button_border_thickness
-        elif len(borderText[2]) > 0:
-            bottomBorderReserve = 8  + theme.button_border_thickness
-        elif len(borderText[3]) > 0:
-            leftBorderReserve = len(borderText[3])*8 + theme.button_border_thickness
-
-        borderThickness = theme.button_border_thickness
-
-        return [len(text)*8 + theme.horizontal_reserve*2 + borderThickness*2 + rightBorderReserve + leftBorderReserve, 8 + theme.vertical_reserve*2 + borderThickness*2 + bottomBorderReserve + topBorderReserve]
-
-
     def draw_battery_statistics(self, x:int, y:int, titleColor:int, borderColor:int, backgroundColor:int, textColor:int):
         width = 130
         height = 60
@@ -302,3 +222,107 @@ class Toolset():
             elif blueBackgroundComponent == 255 and greenBackgroundComponent == 0 and redBackgroundComponent < 255:
                 self.LCD.ellipse(random.randint(0,240), random.randint(0,240), 5, 5, self.LCD.color(redBackgroundComponent, greenBackgroundComponent, blueBackgroundComponent), True)
                 redBackgroundComponent += 1
+
+
+class Button(Toolset):
+    def __init__(self, LCD: displayClass, x:int, y:int, text:str, textFont:int, fontSize:int, theme:themeClass,
+                 borderText:list[str]=["top", "right", "bottom", "left"], state:int = 0, center:list[bool] = [False, False]):
+        """
+        Creates a button with it's center at the given *x* and *y* coordinates\n
+        Arguments:
+            text (str): sets the main text of the button
+            theme (themeClass): theme that determines the look of the button
+            borderText (list): List with four items determining the text displayed on each edge of the button
+            state (int): The state of the button:\n 0 = default; 1 = selected; 2 = pressed
+            center (list): whether to center the button around x and y coordinates:
+                [False, False] = "don\'t center"; [True, True] = "center around both"; 
+                [True, False] = "center on x"; [False, True] = "center on y"
+        """
+
+        self.LCD = LCD
+        super().__init__(LCD)
+        self.position = [x, y]
+        self.text = text
+        self.font = textFont
+        self.fontSize = fontSize
+        self.theme = theme
+        self.borderText = borderText
+        self.state = state
+        self.center = center
+
+        self.calculate_spacing()
+        [self.width, self.height] = self.calculate_dimensions()
+
+
+    def calculate_spacing(self):
+        self.topBorderReserve = 0
+        self.rightBorderReserve = 0
+        self.bottomBorderReserve = 0
+        self.leftBorderReserve = 0
+    
+        if len(self.borderText) != 4:
+            raise ValueError("self.borderText must be a list with 4 elements [top, right, bottom, left], each element being a string that can be empty")
+        elif len(self.borderText[0]) > 0:
+            self.topBorderReserve = self.calculate_text_dimensions(self.borderText[0], 0)[0] + self.theme.button_border_thickness
+        elif len(self.borderText[1]) > 0:
+            self.rightBorderReserve = self.calculate_text_dimensions(self.borderText[1], 0)[1] + self.theme.button_border_thickness
+        elif len(self.borderText[2]) > 0:
+            self.bottomBorderReserve = self.calculate_text_dimensions(self.borderText[2], 0)[0]  + self.theme.button_border_thickness
+        elif len(self.borderText[3]) > 0:
+            self.leftBorderReserve = self.calculate_text_dimensions(self.borderText[3], 0)[1] + self.theme.button_border_thickness
+
+
+    def calculate_dimensions(self) -> list:
+        return [(self.calculate_text_dimensions(self.text, self.font, self.fontSize)[0] + self.theme.button_border_thickness*2 + self.theme.horizontal_reserve*2 + self.leftBorderReserve + self.rightBorderReserve), 
+                (self.calculate_text_dimensions(self.text, self.font, self.fontSize)[1] + self.theme.button_border_thickness*2 + self.theme.vertical_reserve*2 + self.topBorderReserve + self.bottomBorderReserve)]
+
+
+
+    def draw(self):
+        theme = self.theme
+        LCD = self.LCD
+
+        x = self.position[0]
+        y = self.position[1]
+
+        if self.center[0]:
+            x -= self.width//2
+        if self.center[1]:
+            y -= self.height//2
+
+        borderThickness = theme.button_border_thickness
+
+        borderColor = theme.button_border_color
+        textColor = theme.text_color
+        buttonColor = theme.button_color
+        borderTextColor = theme.button_border_text_color
+
+        if self.state == 1:
+            borderColor = theme.button_selected_border_color
+            textColor = theme.button_selected_text_color
+            buttonColor = theme.button_color
+            borderTextColor = theme.button_border_text_color
+        elif self.state == 2:
+            borderColor = theme.button_selected_border_color
+            textColor = theme.button_pressed_text_color
+            buttonColor = theme.button_pressed_color
+            borderTextColor = theme.button_border_text_color
+
+        LCD.fill_rect(x, y, self.width, self.height, borderColor)
+        LCD.fill_rect(x + self.leftBorderReserve + borderThickness, 
+                      y + self.topBorderReserve + borderThickness, 
+                      self.calculate_text_dimensions(self.text, self.font, self.fontSize)[0] + theme.horizontal_reserve*2,
+                      self.calculate_text_dimensions(self.text, self.font, self.fontSize)[1] + theme.vertical_reserve*2, 
+                      buttonColor)
+        
+        self.center_text(self.text,
+                         x + (self.calculate_text_dimensions(self.text, self.font, self.fontSize)[0]//2 + borderThickness + self.theme.horizontal_reserve + self.leftBorderReserve),
+                         y + (self.calculate_text_dimensions(self.text, self.font, self.fontSize)[1]//2 + borderThickness + self.theme.vertical_reserve + self.topBorderReserve),
+                         textColor, buttonColor, self.font, self.fontSize)
+        
+        self.center_x_text(self.borderText[0], x + self.width//2, y - borderThickness, borderTextColor)
+        self.center_y_text(self.borderText[1], x + self.width - self.rightBorderReserve, y + self.height//2, borderTextColor)
+        self.center_x_text(self.borderText[2], x + self.width//2, y + self.height - self.bottomBorderReserve, borderTextColor)
+        self.center_y_text(self.borderText[3], x + borderThickness, y + self.height//2, borderTextColor)
+
+        

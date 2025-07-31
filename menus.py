@@ -6,6 +6,7 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # color space to the color space supported by the display.
 
 from render_tools import Toolset
+from render_tools import Button
 
 from themes import Default_theme
 
@@ -29,18 +30,22 @@ class Menus(Toolset):
         renderEndTime = time.time_ns()
         showEndTime = time.time_ns()
 
-        buttonDimensionsA = self.calculate_button_dimensions(options[0], theme, ["", "A", "",""])
-        buttonDimensionsB = self.calculate_button_dimensions(options[1], theme, ["", "B", "",""])
-        buttonDimensionsX = self.calculate_button_dimensions(options[2], theme, ["", "X", "",""])
-        buttonDimensionsY = self.calculate_button_dimensions(options[3], theme, ["", "Y", "",""])
+        buttonA = Button(LCD, 240, 30, options[0], 0, 0, theme, ["", "A", "",""], 0, [False, True])
+        buttonA.position[0] -= buttonA.width
+
+        buttonB = Button(LCD, 240, 90, options[1], 0, 0, theme, ["", "B", "",""], 0, [False, True])
+        buttonB.position[0] -= buttonB.width
+
+        buttonX = Button(LCD, 240, 150, options[2], 0, 0, theme, ["", "X", "",""], 0, [False, True])
+        buttonX.position[0] -= buttonX.width
+
+        buttonY = Button(LCD, 240, 210, options[3], 0, 0, theme, ["", "Y", "",""], 0, [False, True])
+        buttonY.position[0] -= buttonY.width
 
         LCD.fill(theme.background_color)
 
         def reset_buttons():
-            self.make_button(240 - buttonDimensionsA[0]//2, 30, options[0], theme, ["", "A", "",""])
-            self.make_button(240 - buttonDimensionsB[0]//2, 90, options[1], theme, ["", "B", "",""])
-            self.make_button(240 - buttonDimensionsX[0]//2, 150, options[2], theme, ["", "X", "",""])
-            self.make_button(240 - buttonDimensionsY[0]//2, 210, options[3], theme, ["", "Y", "",""])
+            buttonA.state, buttonB.state, buttonX.state, buttonY.state = 0,0,0,0
 
 
         while(True):
@@ -102,44 +107,56 @@ class Menus(Toolset):
                 tmpSelection = 1
                 selection = 1
                 reset_buttons()
-                self.make_button(240 - buttonDimensionsA[0]//2, 30, options[0], theme, ["", "A", "",""], 2)
+                buttonA.state = 2
+                buttonA.draw()
             elif tmpSelection == 1:
-                self.make_button(240 - buttonDimensionsA[0]//2, 30, options[0], theme, ["", "A", "",""], 1)
+                buttonA.state = 1
+                buttonA.draw()
             else:
-                self.make_button(240 - buttonDimensionsA[0]//2, 30, options[0], theme, ["", "A", "",""])
+                buttonA.state = 0
+                buttonA.draw()
                 
 
             if(LCD.WasPressed.keyB() or selection==2):
                 tmpSelection = 2
                 selection = 2
                 reset_buttons()
-                self.make_button(240 - buttonDimensionsB[0]//2, 90, options[1], theme, ["", "B", "",""], 2)
+                buttonB.state = 2
+                buttonB.draw()
             elif tmpSelection == 2:
-                self.make_button(240 - buttonDimensionsB[0]//2, 90, options[1], theme, ["", "B", "",""], 1)
+                buttonB.state = 1
+                buttonB.draw()
             else:
-                self.make_button(240 - buttonDimensionsB[0]//2, 90, options[1], theme, ["", "B", "",""])
+                buttonB.state = 0
+                buttonB.draw()
                 
 
             if(LCD.WasPressed.keyX() or selection==3):
                 tmpSelection = 3
                 selection = 3
                 reset_buttons()
-                self.make_button(240 - buttonDimensionsX[0]//2, 150, options[2], theme, ["", "X", "",""], 2)
+                buttonX.state = 2
+                buttonX.draw()
             elif tmpSelection == 3:
-                self.make_button(240 - buttonDimensionsX[0]//2, 150, options[2], theme, ["", "X", "",""], 1)
+                buttonX.state = 1
+                buttonX.draw()
             else:
-                self.make_button(240 - buttonDimensionsX[0]//2, 150, options[2], theme, ["", "X", "",""])
+                buttonX.state = 0
+                buttonX.draw()
 
 
             if(LCD.WasPressed.keyY() or selection==4):
                 tmpSelection = 4
                 selection = 4
                 reset_buttons()
-                self.make_button(240 - buttonDimensionsY[0]//2, 210, options[3], theme, ["", "Y", "",""], 2)
+                buttonY.state = 2
+                buttonY.draw()
             elif tmpSelection == 4:
-                self.make_button(240 - buttonDimensionsY[0]//2, 210, options[3], theme, ["", "Y", "",""], 1)
+                buttonY.state = 1
+                buttonY.draw()
             else:
-                self.make_button(240 - buttonDimensionsY[0]//2, 210, options[3], theme, ["", "Y", "",""])
+                buttonY.state = 0
+                buttonY.draw()
 
             renderEndTime = time.time_ns()
 
@@ -149,13 +166,13 @@ class Menus(Toolset):
 
             if selection != 0:
                 if selection == 1:
-                    self.scene_circle_transition(240 - buttonDimensionsA[0]//2, 30, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+                    self.scene_circle_transition(240 - buttonA.width//2, 30, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
                 elif selection == 2:
-                    self.scene_circle_transition(240 - buttonDimensionsB[0]//2, 90, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+                    self.scene_circle_transition(240 - buttonB.width//2, 90, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
                 elif selection == 3:
-                    self.scene_circle_transition(240 - buttonDimensionsX[0]//2, 150, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+                    self.scene_circle_transition(240 - buttonX.width//2, 150, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
                 elif selection == 4:
-                    self.scene_circle_transition(240 - buttonDimensionsY[0]//2, 210, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+                    self.scene_circle_transition(240 - buttonY.width//2, 210, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
 
                 return selection
     
@@ -165,5 +182,4 @@ class Menus(Toolset):
         
         tmpSelection = 0
         selection = 0
-
         

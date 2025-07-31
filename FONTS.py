@@ -294,10 +294,10 @@ class FONTS():
             xx = xx + move
 
     @staticmethod
-    def calculate_text_dimensions(string:str, fontSize):
+    def calculate_text_dimensions(string:str, fontSize) -> list[int]:
         characterWidth = 6*fontSize - int(fontSize/2)
-        ySize = (characterWidth+fontSize+1)
-        xSize = (characterWidth*len(string)-int((fontSize+1)/2))
+        ySize = int(characterWidth+fontSize+1)
+        xSize = int(characterWidth*len(string)-int((fontSize+1)/2))
 
         return [xSize, ySize]
 
