@@ -265,13 +265,13 @@ class Button(Toolset):
             raise ValueError("self.borderText must be a list with 4 elements [top, right, bottom, left], each element being a string that can be empty")
         else:
             if len(self.borderText[0]) > 0:
-                self.topBorderReserve = self.calculate_text_dimensions(self.borderText[0], 0)[0] + self.theme.button_border_thickness
+                self.topBorderReserve = self.calculate_text_dimensions(self.borderText[0], 0)[1] + self.theme.button_border_thickness
             if len(self.borderText[1]) > 0:
-                self.rightBorderReserve = self.calculate_text_dimensions(self.borderText[1], 0)[1] + self.theme.button_border_thickness
+                self.rightBorderReserve = self.calculate_text_dimensions(self.borderText[1], 0)[0] + self.theme.button_border_thickness
             if len(self.borderText[2]) > 0:
-                self.bottomBorderReserve = self.calculate_text_dimensions(self.borderText[2], 0)[0]  + self.theme.button_border_thickness
+                self.bottomBorderReserve = self.calculate_text_dimensions(self.borderText[2], 0)[1]  + self.theme.button_border_thickness
             if len(self.borderText[3]) > 0:
-                self.leftBorderReserve = self.calculate_text_dimensions(self.borderText[3], 0)[1] + self.theme.button_border_thickness
+                self.leftBorderReserve = self.calculate_text_dimensions(self.borderText[3], 0)[0] + self.theme.button_border_thickness
 
 
     def calculate_dimensions(self) -> list:

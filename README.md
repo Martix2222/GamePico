@@ -1,6 +1,6 @@
 ### Disclaimers
 - This is an independent project made for the Raspberry Pi Pico but it is in no way affiliated with the official Raspberry Pi Ltd.
-- And about AI use in this project; Generally I try to avoid AI as much as possible. Especially AI art. All assets used in this project are either mine or the author will be credited appropriately. And when it comes to code, the original code was written with some help from GitHub Copilot (before I started this rewrite project) and since I'm still learning sometimes desperate times require desperate solutions which sometimes do contain asking a chatbot how to accomplish a specific thing.
+- And about AI use in this project; Generally I try to avoid AI as much as possible. Especially AI art. All assets used in this project are either mine or the author will be credited appropriately. And when it comes to code, the original code was written with some help from GitHub Copilot (before I started this rewrite project) and since I'm still learning sometimes desperate times require desperate solutions which sometimes do contain asking a chatbot how to accomplish a specific thing. But I try to minimize even those uses.
 
 # About this project
 This is a complete overhaul of a project I started in my free time. This means that I have large parts of the code already written, but I decided to completely restructure the code by starting over in order to make it much more expandable and actually worthy of publishing on GitHub.

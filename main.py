@@ -17,21 +17,19 @@ from menus import Menus
 # Overclock
 freq(250_000_000)
 
-class Main(Toolset):
+class Main(Menus):
     def __init__(self) -> None:
         # Initialize the display
         self.LCD = display_driver.LCD_1inch3()
-        super().__init__(self.LCD)
 
         self.color = display_driver.LCD_1inch3.color
 
         self.theme = themes.Default_theme()
-
-        self.Menus = Menus(self.LCD, self.theme)
+        super().__init__(self.LCD, self.theme)
 
     
     def start(self, showSplash = True, recordSession = False):
-        self.LCD.set_brightness(100)
+        self.LCD.brightness(100)
         self.LCD.enableContinuousRecording = recordSession
         if showSplash:
             self.LCD.fill(0xffff)
@@ -46,10 +44,10 @@ class Main(Toolset):
 
 
     def main_loop(self):
-            choice = -1
-            while choice != 3:
+            choice = 0
+            while True:
                 self.LCD.WasPressed.clear_queue()
-                choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51])
+                choice = self.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51])
                 self.LCD.WasPressed.clear_queue()
                 if choice == 1:
                     # Play
@@ -58,20 +56,25 @@ class Main(Toolset):
                     pass
                 elif choice == 2:
                     # Settings
-                    # TODO - add brightness settings
-                    choice = -1
-                    while choice != 1:
+                    choice = 0
+                    while True:
                         options = ["Brightness", "Main menu"]
                         center = [175, 120]
-                        choice = self.Menus.scrolling_menu("Settings", options, self.theme, center, True)
+                        self.LCD.WasPressed.clear_queue()
+                        choice = self.scrolling_menu("Settings", options, choice, center, [True])
+
                         if choice == 0:
-                            # TODO brightness
-                            pass
+                            choice += self.brightness_menu_button(center)
+                            if choice < 0:
+                                choice = 0
+                            elif choice > len(options)-1:
+                                choice = len(options)-1
+                        
                         elif choice == 1:
                             # Return to main menu
-                            self.scene_circle_transition(center[0], center[1], self.theme.primary_color, self.theme.background_color, self.theme.intro_circle_thickness, self.theme.intro_circle_thickness//2)
+                            break
 
-                    choice = -1
+                    choice = 0
                 elif choice == 3:
                     # Exit
                     break

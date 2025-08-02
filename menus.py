@@ -50,8 +50,6 @@ class Menus(Toolset):
 
 
         while(True):
-            time.sleep_ms(5)
-            
             self.update_animated_background(0, theme.background_color, theme.secondary_background_color)
 
             # Draw the title
@@ -179,17 +177,36 @@ class Menus(Toolset):
     
 
     def scrolling_menu(self, title:str="scrolling menu", options:list[str]=["option1", "option2", "option3", "option4", "option5"],
-                       theme:Default_theme = Default_theme(), center:list[int] = [175, 120], skipExitTransition:bool = False) -> int:
+                       initialSelection:int = 0, center:list[int] = [175, 120], skipExitTransitionFor:list[bool] = []) -> int:
         """
         A menu with unlimited amount of options which can be scrolled through using the joystick on the display.\n 
         The returned value is the index of the selected option out of the *options* argument.
+        Arguments:
+            title (str): The title rendered on the left side of the menu.
+            options (list[str]): List of options the user can choose from.
+            initialSelection (int): The index of the option that is selected when the menu opens.
+            center (list[int]): List of coordinates [x, y] that specify the center of the currently selected button in the scrolling menu.
+            skipExitTransitionFor (list[bool]): List of bools. Each boolean value corresponds to each option and specifies whether the exit
+                transition animation should be skipped for that option. If no value is given for an option, the default value is False.
         """
+        # Check arguments
+        if initialSelection < 0 or initialSelection >= len(options):
+            raise Exception(ValueError, "startOption index out of bounds of options!")
         
+        if len(options) != len(skipExitTransitionFor):
+            if len(options) < len(skipExitTransitionFor):
+                skipExitTransitionFor = skipExitTransitionFor[:len(options)]
+            else:
+                while len(options) > len(skipExitTransitionFor):
+                    skipExitTransitionFor.append(False)
+
+        
+        # Initialize variables
         LCD = self.LCD
+        theme = self.theme
         x, y = center
 
-        # Initialize variables
-        tmpSelection = 0
+        tmpSelection = initialSelection
         selection = 0
 
         font = 0
@@ -206,17 +223,22 @@ class Menus(Toolset):
 
         # Initialize all buttons
         for i in range(len(options)):
+            buttons.append(Button(LCD, x, y, options[i], font, fontSize, theme, ["", "", "", ""], 0, [True, False]))
             if i == 0:
-                buttons.append(Button(LCD, x, y, options[i], font, fontSize, theme, ["", "", "", ""], 0, [True, False]))
                 buttons[i].position[1] -= buttons[i].height // 2
                 y -= buttons[i].height // 2
-            else:
-                buttons.append(Button(LCD, x, y, options[i], font, fontSize, theme, ["", "", "", ""], 0, [True, False]))
-                
+    
             y += buttons[i].height + theme.button_spacing
+
+        # Move the buttons according to the initial selection
+        targetScrollOffset = buttons[tmpSelection].position[1] - buttons[0].position[1]
+        currentScrollOffset = targetScrollOffset
+        for i in range(len(buttons)):
+            buttons[i].position[1] -= targetScrollOffset
 
 
         while True:
+            # This handles button presses until an option is selected
             if selection == -1:
                 if LCD.WasPressed.up(clearQueue=True) and tmpSelection > 0:
                     update = True
@@ -257,7 +279,9 @@ class Menus(Toolset):
                     update = True
                     selection = tmpSelection
 
-
+            # Once a button is pressed the targetScrollOffset value is changed and this part of the code
+            # changes the currentScrollOffset until it matches the targetScrollOffset.
+            # This makes sure that the selected button is always on the center coordinates.
             if currentScrollOffset != targetScrollOffset:
                 change = 0
                 if abs(currentScrollOffset - targetScrollOffset) < 5:
@@ -275,8 +299,10 @@ class Menus(Toolset):
             else:
                 time.sleep_ms(100) # Limit the update rate when nothing is happening
                 if selection > -1:
-                    if not skipExitTransition:
+                    if not skipExitTransitionFor[selection]:
                         self.scene_circle_transition(x, 120, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+                    else:
+                        self.LCD.fill_rect(buttons[selection].position[0]-buttons[selection].width//2, buttons[selection].position[1], buttons[selection].width, buttons[selection].height, theme.background_color)
                     return selection
 
             # If a button was pressed, this updates the buttons' state and side text
@@ -322,4 +348,66 @@ class Menus(Toolset):
             self.display_text(title, titlePosition[0]+theme.horizontal_reserve*2, titlePosition[1]+theme.vertical_reserve*2//2, theme.title_text_color,theme.secondary_color, 1, 2)
             
             LCD.show()
+    
+
+    def brightness_menu_button(self, position:list[int] = [175, 120], step:float = 10.0) -> int:
+        LCD = self.LCD
+        theme = self.theme
+
+        currentBrightness = LCD.brightness()
+
+        formattedText = " "*(4-len(str(int(currentBrightness)))) + str(int(currentBrightness))
+        
+        brightnessButton = Button(LCD, position[0], position[1], formattedText, 0, 0, theme, ["", " > ", "", " < "], 0 , [True, True])
+
+        update = True
+        while True:
+            # left and right joystick presses change the value
+            if LCD.WasPressed.left():
+                LCD.brightness(LCD.brightness()-step)
+                brightnessButton.borderText[3] = "<<<"
+                update = True
+            
+            if LCD.WasPressed.right():
+                LCD.brightness(LCD.brightness()+step)
+                brightnessButton.borderText[1] = ">>>"
+                update = True
+
+
+            if update:
+                update = False
+                currentBrightness = LCD.brightness()
+                formattedText = " "*(4-len(str(int(currentBrightness)))) + str(int(currentBrightness))
+                brightnessButton.text = formattedText
+                brightnessButton.update()
+                brightnessButton.draw()
+            else:
+                brightnessButton.borderText = ["", " > ", "", " < "]
+                brightnessButton.update()
+                brightnessButton.draw()
+
+            # ctrl, up and down close the menu
+            if LCD.WasPressed.ctrl():
+                brightnessButton.state = 2
+                brightnessButton.draw()
+                LCD.show()
+                return 0
+            
+            if LCD.WasPressed.up():
+                brightnessButton.state = 2
+                brightnessButton.draw()
+                LCD.show()
+                return -1
+            
+            if LCD.WasPressed.down():
+                brightnessButton.state = 2
+                brightnessButton.draw()
+                LCD.show()
+                return 1
+            
+            
+            LCD.show()
+            time.sleep_ms(50)
+
+
 

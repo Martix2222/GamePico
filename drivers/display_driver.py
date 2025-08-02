@@ -159,6 +159,9 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.blue  =   0xf800
         self.white =   0xffff
 
+        self.currentBrightness = 100.0
+        self.brightness(self.currentBrightness)
+
         self.enableContinuousRecording = False
 
         # This is currently mostly for reference and sets the time between frames when recording.
@@ -433,27 +436,32 @@ class LCD_1inch3(framebuf.FrameBuffer):
         # Switch the two bytes around to circumvent color handling bug in framebuf library
         return ((convertedColor & 0x00ff) << 8) | ((convertedColor & 0xff00)>>8)
     
-    @staticmethod
-    def set_brightness(brightness:float):
+    def brightness(self, brightness:float = -1.0) -> float:
         """ 
-        Set the brightness of the display.
+        Gets or sets the brightness of the display.
         Arguments:
              brightness (float): The brightness (in %) that the display should be set to.
-                Value of this argument should be between 0 and 100, otherwise it is automatically
-                set to 100 if the value is too large and to 1 if the value is too small.
+                Value of this argument must be between 0 (exclusive) and 100 (inclusive), otherwise it is automatically
+                set to 100 if the value is too large and not changed if the value is too small.
+        Returns:
+            float: The current brightness of the display in %
         """
+        if brightness == -1.0:
+            return self.currentBrightness
+
         try:
             brightness = float(brightness)
         except ValueError:
-            return(ValueError)
-        if brightness < 0.0:
-            brightness = 1.0
+            raise ValueError
+        if brightness <= 0.0:
+            brightness = self.currentBrightness
         if brightness > 100.0:
             brightness = 100.0
 
-
+        self.currentBrightness = brightness
 
         pwm = PWM(Pin(BL))
         pwm.freq(1000)
         pwm.duty_u16(min(int(65535*brightness/100), 65535)) # max 65535
+        return self.currentBrightness
 
