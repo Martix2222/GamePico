@@ -2,13 +2,11 @@ from machine import freq
 import time
 import gc
 
-from games.snek import Snek
-
 import drivers.display_driver as display_driver
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
-from render_tools import Toolset
+from games.snek import Snek
 
 import themes
 
