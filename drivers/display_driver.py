@@ -422,12 +422,12 @@ class LCD_1inch3(framebuf.FrameBuffer):
         """ 
         Converts the 24-bit color format to the 16-bit color format supported by the display.
         """
-        # Convert RGB888 to RGB565
+        # Convert RGB888 to RGB565 by scaling
         r5 = (R * 31) // 255           # 5‑bit red
         g6 = (G * 63) // 255           # 6‑bit green
         b5 = (B * 31) // 255           # 5‑bit blue
 
-        # Pack into 16 bits (2 bytes): RRRRRGGGGGGBBBBB
+        # Pack into 16 bits (2 bytes): |RRRRRGGG|GGGBBBBB|
         convertedColor = (r5 << 11) | (g6 << 5) | b5
 
         # Switch the two bytes around to circumvent color handling bug in framebuf library

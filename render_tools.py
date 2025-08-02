@@ -3,7 +3,7 @@ import math
 import random
 
 from drivers.display_driver import LCD_1inch3 as displayClass
-# The display driver must contain a colour() function to convert 24-bit
+# The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
 from FONTS import FONTS
@@ -180,7 +180,7 @@ class Toolset():
     def update_animated_background(self, backgroundMode:int, backgroundColor:int, secondaryBackgroundColor:int):
         """
         Used to create and update an animated background in a specific style. \n
-        Current supported *backgroundMode* values:\n
+        Currently supported *backgroundMode* values:\n
         0: crates a mosaic out of fixed-grid squares with the *backgroundColor* and *secondaryBackgroundColor* \n
         1: draws random lines on the screen with the *backgroundColor* and *secondaryBackgroundColor* \n
         2: similar to mode 0, but with circles that are not fixed to a grid \n
@@ -228,7 +228,7 @@ class Button(Toolset):
     def __init__(self, LCD: displayClass, x:int, y:int, text:str, textFont:int, fontSize:int, theme:themeClass,
                  borderText:list[str]=["top", "right", "bottom", "left"], state:int = 0, center:list[bool] = [False, False]):
         """
-        Creates a button with it's center at the given *x* and *y* coordinates\n
+        Creates a button object centered around the *x* and *y* coordinates according to the *center* argument.
         Arguments:
             text (str): sets the main text of the button
             theme (themeClass): theme that determines the look of the button
@@ -255,6 +255,7 @@ class Button(Toolset):
 
 
     def calculate_spacing(self):
+        """ Calculates the spacing around the border of the button to accompany for border text. """
         self.topBorderReserve = 0
         self.rightBorderReserve = 0
         self.bottomBorderReserve = 0
@@ -262,23 +263,34 @@ class Button(Toolset):
     
         if len(self.borderText) != 4:
             raise ValueError("self.borderText must be a list with 4 elements [top, right, bottom, left], each element being a string that can be empty")
-        elif len(self.borderText[0]) > 0:
-            self.topBorderReserve = self.calculate_text_dimensions(self.borderText[0], 0)[0] + self.theme.button_border_thickness
-        elif len(self.borderText[1]) > 0:
-            self.rightBorderReserve = self.calculate_text_dimensions(self.borderText[1], 0)[1] + self.theme.button_border_thickness
-        elif len(self.borderText[2]) > 0:
-            self.bottomBorderReserve = self.calculate_text_dimensions(self.borderText[2], 0)[0]  + self.theme.button_border_thickness
-        elif len(self.borderText[3]) > 0:
-            self.leftBorderReserve = self.calculate_text_dimensions(self.borderText[3], 0)[1] + self.theme.button_border_thickness
+        else:
+            if len(self.borderText[0]) > 0:
+                self.topBorderReserve = self.calculate_text_dimensions(self.borderText[0], 0)[0] + self.theme.button_border_thickness
+            if len(self.borderText[1]) > 0:
+                self.rightBorderReserve = self.calculate_text_dimensions(self.borderText[1], 0)[1] + self.theme.button_border_thickness
+            if len(self.borderText[2]) > 0:
+                self.bottomBorderReserve = self.calculate_text_dimensions(self.borderText[2], 0)[0]  + self.theme.button_border_thickness
+            if len(self.borderText[3]) > 0:
+                self.leftBorderReserve = self.calculate_text_dimensions(self.borderText[3], 0)[1] + self.theme.button_border_thickness
 
 
     def calculate_dimensions(self) -> list:
+        """ Calculates the width and height of the button with the current properties and returns the result. """
         return [(self.calculate_text_dimensions(self.text, self.font, self.fontSize)[0] + self.theme.button_border_thickness*2 + self.theme.horizontal_reserve*2 + self.leftBorderReserve + self.rightBorderReserve), 
                 (self.calculate_text_dimensions(self.text, self.font, self.fontSize)[1] + self.theme.button_border_thickness*2 + self.theme.vertical_reserve*2 + self.topBorderReserve + self.bottomBorderReserve)]
 
 
+    def update(self):
+        """
+        Updates spacing and calculated dimensions of the button.\n
+        This must be called every time when the self.borderText variable is changed.
+        """
+        self.calculate_spacing()
+        [self.width, self.height] = self.calculate_dimensions()
+
 
     def draw(self):
+        """ Draws the button according to its current properties. """
         theme = self.theme
         LCD = self.LCD
 

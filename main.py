@@ -17,10 +17,11 @@ from menus import Menus
 # Overclock
 freq(250_000_000)
 
-class Main():
+class Main(Toolset):
     def __init__(self) -> None:
         # Initialize the display
         self.LCD = display_driver.LCD_1inch3()
+        super().__init__(self.LCD)
 
         self.color = display_driver.LCD_1inch3.color
 
@@ -45,22 +46,38 @@ class Main():
 
 
     def main_loop(self):
-            choice = 0
-            while True:
+            choice = -1
+            while choice != 3:
                 self.LCD.WasPressed.clear_queue()
                 choice = self.Menus.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51])
+                self.LCD.WasPressed.clear_queue()
                 if choice == 1:
-                    # Play option
+                    # Play
                     snek = Snek(self.LCD)
                     snek.game_loop()
                     pass
                 elif choice == 2:
-                    pass
+                    # Settings
+                    # TODO - add brightness settings
+                    choice = -1
+                    while choice != 1:
+                        options = ["Brightness", "Main menu"]
+                        center = [175, 120]
+                        choice = self.Menus.scrolling_menu("Settings", options, self.theme, center, True)
+                        if choice == 0:
+                            # TODO brightness
+                            pass
+                        elif choice == 1:
+                            # Return to main menu
+                            self.scene_circle_transition(center[0], center[1], self.theme.primary_color, self.theme.background_color, self.theme.intro_circle_thickness, self.theme.intro_circle_thickness//2)
+
+                    choice = -1
                 elif choice == 3:
-                    # Exit option - break out of the loop
+                    # Exit
                     break
                 elif choice == 4:
-                    # Controls option
+                    # Controls
+                    # TODO
                     pass
 
 
