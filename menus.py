@@ -410,4 +410,77 @@ class Menus(Toolset):
             time.sleep_ms(50)
 
 
+    def controls_tutorial(self):
+        """ Walks the user through a quick tutorial on all the controls by requiring them to press them all. """
+        LCD = self.LCD
+        theme = self.theme
 
+        LCD.fill(theme.background_color)
+
+        buttonA = Button(LCD, 240, 30, "Button A", 0, 0, theme, ["", "A", "",""], 0, [False, True])
+        buttonA.position[0] -= buttonA.width
+
+        buttonB = Button(LCD, 240, 80, "Button B", 0, 0, theme, ["", "B", "",""], 0, [False, True])
+        buttonB.position[0] -= buttonB.width
+
+        buttonX = Button(LCD, 240, 160, "Button X", 0, 0, theme, ["", "X", "",""], 0, [False, True])
+        buttonX.position[0] -= buttonX.width
+
+        buttonY = Button(LCD, 240, 210, "Button Y", 0, 0, theme, ["", "Y", "",""], 0, [False, True])
+        buttonY.position[0] -= buttonY.width
+
+        buttonUp = Button(LCD, 80, 90, "  UP  ", 0, 0, theme, ["", "", "",""], 0, [True, True])
+
+        buttonSelect = Button(LCD, 80, 120, "Select", 0, 0, theme, ["", "", "",""], 0, [True, True])
+
+        buttonDown = Button(LCD, 80, 150, " Down ", 0, 0, theme, ["", "", "",""], 0, [True, True])
+
+        buttonLeft = Button(LCD, 30, 120, "Left ", 0, 0, theme, ["", "", "",""], 0, [True, True])
+
+        buttonRight = Button(LCD, 140, 120, "Right", 0, 0, theme, ["", "", "",""], 0, [True, True])
+
+        buttons = [buttonA, buttonB, buttonX, buttonY, buttonUp, buttonDown, buttonLeft, buttonRight, buttonSelect]
+
+        for button in buttons:
+            button.draw()
+
+        self.center_text("Press all buttons", 70, 7, theme.text_color, theme.background_color)
+        self.center_text("finish the", 70, 16, theme.text_color, theme.background_color)
+        self.center_text("tutorial.", 70, 25, theme.text_color, theme.background_color)
+        
+        LCD.show()
+        allPressed = False
+        while not allPressed:
+
+            for button in buttons:
+                if button.state == 2:
+                    allPressed = True
+                else:
+                    allPressed = False
+                    break
+
+            if LCD.WasPressed.keyA():
+                buttonA.state = 2
+            if LCD.WasPressed.keyB():
+                buttonB.state = 2
+            if LCD.WasPressed.keyX():
+                buttonX.state = 2
+            if LCD.WasPressed.keyY():
+                buttonY.state = 2
+            if LCD.WasPressed.up():
+                buttonUp.state = 2
+            if LCD.WasPressed.down():
+                buttonDown.state = 2
+            if LCD.WasPressed.left():
+                buttonLeft.state = 2
+            if LCD.WasPressed.right():
+                buttonRight.state = 2
+            if LCD.WasPressed.ctrl():
+                buttonSelect.state = 2
+            
+            for button in buttons:
+                button.draw()
+            
+            LCD.show()
+
+        self.scene_circle_transition(120, 120, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)

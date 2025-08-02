@@ -78,7 +78,7 @@ class Main(Menus):
                     break
                 elif choice == 4:
                     # Controls
-                    # TODO
+                    self.controls_tutorial()
                     pass
 
 
