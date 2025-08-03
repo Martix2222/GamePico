@@ -18,8 +18,19 @@ class Menus(Toolset):
 
         super().__init__(LCD)
     
-    def static_menu(self, title:str="Menu", options:list=["Key A", "Key B", "Key C", "Key D"], logoPath:str="", logoPos:list=[0,0], logoDim = [0,0], enableDebug = False):
-        """ A menu with four options, each tied to one of the A, B, X or Y buttons of the display. """
+    def static_menu(self, title:str="Menu", options:list[str]=["Key A", "Key B", "Key C", "Key D"], logoPath:str="", logoPos:list[int]=[0,0], logoDim:list[int] = [0,0], enableDebug:bool = False) -> int:
+        """ 
+        A menu with four options, each tied to one of the A, B, X or Y buttons of the display. 
+        Arguments:
+            title (str): The title of the menu
+            options (list[str]): A list of four options, each corresponding to a button next to the display.
+            logoPath (str): Path to a logo that is rendered in the menu.
+            logoPos (list[int]): Position of the logo on the display.
+            logoDim (list[int]): Dimensions of the logo. (These are required to properly load the logo file)
+            enableDebug (bool): If set to True timing statistics are rendered instead of the logo.
+        Returns:
+            (int): The index (increased by one) of the option selected by the user.
+        """
         LCD = self.LCD
         theme = self.theme
         
