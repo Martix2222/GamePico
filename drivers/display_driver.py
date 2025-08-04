@@ -328,7 +328,8 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.cs(1)
 
         if (capture or self.enableContinuousRecording) and self.stillRecording:
-            self.screenshot("frame.bin", max(forceMinimumDuplicates, (((time.time_ns() - self.lastCaptureTime)//1000000)//self.frameTime_ms)-1))
+            duplicateCount = max(forceMinimumDuplicates, (((time.time_ns() - self.lastCaptureTime)//1000000)//self.frameTime_ms)-1)
+            self.screenshot("frame.bin", duplicateCount)
             self.lastCaptureTime = time.time_ns()
         elif (capture or self.enableContinuousRecording) and not self.stillRecording:
             self.init_save_location()
