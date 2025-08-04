@@ -51,7 +51,6 @@ class Main(Menus):
                     # Play
                     snek = Snek(self.LCD)
                     snek.game_loop()
-                    pass
                 elif choice == 2:
                     # Settings
                     choice = 0
@@ -59,7 +58,7 @@ class Main(Menus):
                         options = ["Brightness", "Main menu"]
                         center = [175, 120]
                         self.LCD.WasPressed.clear_queue()
-                        choice = self.scrolling_menu("Settings", options, choice, center, [True])
+                        choice = self.vertical_scrolling_menu("Settings", options, choice, center, [True])
 
                         if choice == 0:
                             choice += self.brightness_menu_button(center)

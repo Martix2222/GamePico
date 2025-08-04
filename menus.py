@@ -187,10 +187,10 @@ class Menus(Toolset):
                 return selection
     
 
-    def scrolling_menu(self, title:str="scrolling menu", options:list[str]=["option1", "option2", "option3", "option4", "option5"],
+    def vertical_scrolling_menu(self, title:str="scrolling menu", options:list[str]=["option1", "option2", "option3", "option4", "option5"],
                        initialSelection:int = 0, center:list[int] = [175, 120], skipExitTransitionFor:list[bool] = []) -> int:
         """
-        A menu with unlimited amount of options which can be scrolled through using the joystick on the display.\n 
+        A menu with unlimited amount of options which can be scrolled vertically through using the joystick on the display.\n 
         The returned value is the index of the selected option out of the *options* argument.
         Arguments:
             title (str): The title rendered on the left side of the menu.
@@ -215,7 +215,6 @@ class Menus(Toolset):
         # Initialize variables
         LCD = self.LCD
         theme = self.theme
-        x, y = center
 
         tmpSelection = initialSelection
         selection = 0
@@ -233,6 +232,7 @@ class Menus(Toolset):
         selection = -1 
 
         # Initialize all buttons
+        x, y = center
         for i in range(len(options)):
             buttons.append(Button(LCD, x, y, options[i], font, fontSize, theme, ["", "", "", ""], 0, [True, False]))
             if i == 0:
@@ -290,8 +290,8 @@ class Menus(Toolset):
                     update = True
                     selection = tmpSelection
 
-            # Once a button is pressed the targetScrollOffset value is changed and this part of the code
-            # changes the currentScrollOffset until it matches the targetScrollOffset.
+            # Once an up or down button is pressed the targetScrollOffset value is changed and this part of the code
+            # updates the currentScrollOffset until it matches the targetScrollOffset.
             # This makes sure that the selected button is always on the center coordinates.
             if currentScrollOffset != targetScrollOffset:
                 change = 0
@@ -311,7 +311,7 @@ class Menus(Toolset):
                 time.sleep_ms(100) # Limit the update rate when nothing is happening
                 if selection > -1:
                     if not skipExitTransitionFor[selection]:
-                        self.scene_circle_transition(x, 120, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+                        self.scene_circle_transition(center[0], center[1], theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
                     else:
                         self.LCD.fill_rect(buttons[selection].position[0]-buttons[selection].width//2, buttons[selection].position[1], buttons[selection].width, buttons[selection].height, theme.background_color)
                     return selection
@@ -397,7 +397,8 @@ class Menus(Toolset):
                 brightnessButton.update()
                 brightnessButton.draw()
 
-            # ctrl, up and down close the menu
+            # ctrl, up and down close the menu and up and down then can
+            # return the user to the previous menu and scroll to the next option
             if LCD.WasPressed.ctrl():
                 brightnessButton.state = 2
                 brightnessButton.draw()
@@ -495,3 +496,140 @@ class Menus(Toolset):
             LCD.show()
 
         self.scene_circle_transition(120, 120, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+
+    
+    def horizontal_scrolling_menu(self, title:str="scrolling menu", options:list[str]=["option1", "option2", "option3", "option4", "option5"],
+                       initialSelection:int = 0, center:list[int] = [120, 120], skipExitTransitionFor:list[bool] = []) -> int:
+        """
+        A menu with unlimited amount of options which can be scrolled vertically through using the joystick on the display.\n 
+        The returned value is the index of the selected option out of the *options* argument.
+        Arguments:
+            title (str): The title rendered on the left side of the menu.
+            options (list[str]): List of options the user can choose from.
+            initialSelection (int): The index of the option that is selected when the menu opens.
+            center (list[int]): List of coordinates [x, y] that specify the center of the currently selected button in the scrolling menu.
+            skipExitTransitionFor (list[bool]): List of bools. Each boolean value corresponds to each option and specifies whether the exit
+                transition animation should be skipped for that option. If no value is given for an option, the default value is False.
+        """
+        # The code is largely reused from the vertical_scrolling_menu function
+        
+        # Check arguments
+        if initialSelection < 0 or initialSelection >= len(options):
+            raise Exception(ValueError, "startOption index out of bounds of options!")
+        
+        if len(options) != len(skipExitTransitionFor):
+            if len(options) < len(skipExitTransitionFor):
+                skipExitTransitionFor = skipExitTransitionFor[:len(options)]
+            else:
+                while len(options) > len(skipExitTransitionFor):
+                    skipExitTransitionFor.append(False)
+
+        
+        # Initialize variables
+        LCD = self.LCD
+        theme = self.theme
+
+        tmpSelection = initialSelection
+        selection = 0
+
+        font = 0
+        fontSize = 0
+
+        buttons = []
+
+        update = True
+        
+        targetScrollOffset = 0
+        currentScrollOffset = 0
+
+        selection = -1
+
+        # Initialize all buttons
+        x, y = center
+        for i in range(len(options)):
+            buttons.append(Button(LCD, x, y, options[i], font, fontSize, theme, ["", "", "", ""], 0, [False, True]))
+            if i == 0:
+                buttons[i].position[0] -= buttons[i].width // 2
+                x -= buttons[i].width // 2
+    
+            x += buttons[i].width + theme.button_spacing
+
+        # Move the buttons according to the initial selection
+        targetScrollOffset = buttons[tmpSelection].position[0] - buttons[0].position[0]
+        currentScrollOffset = targetScrollOffset
+        for i in range(len(buttons)):
+            buttons[i].position[0] -= targetScrollOffset
+
+
+        while True:
+            # This handles button presses until an option is selected
+            if selection == -1:
+                if LCD.WasPressed.left(clearQueue=True) and tmpSelection > 0:
+                    update = True
+                    tmpSelection -= 1
+                    targetScrollOffset += buttons[tmpSelection+1].position[0] - buttons[tmpSelection].position[0]                
+
+                if LCD.WasPressed.right(clearQueue=True) and tmpSelection < len(buttons)-1:
+                    update = True
+                    tmpSelection += 1
+                    targetScrollOffset -= buttons[tmpSelection].position[0] - buttons[tmpSelection-1].position[0]
+
+                if LCD.WasPressed.ctrl():
+                    update = True
+                    selection = tmpSelection
+
+            # Once a button is pressed the targetScrollOffset value is changed and this part of the code
+            # changes the currentScrollOffset until it matches the targetScrollOffset.
+            # This makes sure that the selected button is always on the center coordinates.
+            if currentScrollOffset != targetScrollOffset:
+                change = 0
+                if abs(currentScrollOffset - targetScrollOffset) < 5:
+                    change = 1
+                else:
+                    change = abs(currentScrollOffset - targetScrollOffset)//5 + 1
+
+                if currentScrollOffset > targetScrollOffset:
+                    change = change * -1
+                
+                for button in buttons:
+                    button.position[0] += change
+
+                currentScrollOffset += change
+            else:
+                time.sleep_ms(100) # Limit the update rate when nothing is happening
+                if selection > -1:
+                    if not skipExitTransitionFor[selection]:
+                        self.scene_circle_transition(center[0], center[1], theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
+                    else:
+                        self.LCD.fill_rect(buttons[selection].position[0]-buttons[selection].width//2, buttons[selection].position[1], buttons[selection].width, buttons[selection].height, theme.background_color)
+                    return selection
+
+            # If a button was pressed, this updates the buttons' state and side text
+            if update:
+                update = False
+                for i in range(len(buttons)):
+                    if i == selection:
+                        buttons[i].state = 2
+                    elif i == tmpSelection:
+                        buttons[i].state = 1
+                    else:
+                        buttons[i].state = 0
+                    
+                    buttons[i].update()
+            
+            
+            LCD.fill(theme.background_color)
+
+            for button in buttons:
+                # Skip buttons outside of the display
+                if (button.position[0]+button.width) > 0 and button.position[0] < self.LCD.width: 
+                    button.draw()
+
+            # Draw the title
+            titleTextDimensions = self.calculate_text_dimensions(title, 1, 2)
+            titlePosition = [60, (20 - (titleTextDimensions[1]+theme.vertical_reserve*4//2)//2)]
+            self.LCD.fill_rect(titlePosition[0], titlePosition[1], titleTextDimensions[0]+theme.horizontal_reserve*4, titleTextDimensions[1]+theme.vertical_reserve*4//2, theme.button_border_color)
+            self.LCD.fill_rect(titlePosition[0]+theme.horizontal_reserve, titlePosition[1]+theme.vertical_reserve//2, titleTextDimensions[0]+theme.horizontal_reserve*2, titleTextDimensions[1]+theme.vertical_reserve*2//2, theme.secondary_color)
+            self.display_text(title, titlePosition[0]+theme.horizontal_reserve*2, titlePosition[1]+theme.vertical_reserve*2//2, theme.title_text_color,theme.secondary_color, 1, 2)
+            
+            LCD.show()
