@@ -201,7 +201,7 @@ class Menus(Toolset):
         """
         # Check arguments
         if initialSelection < 0 or initialSelection >= len(options):
-            raise Exception(ValueError, "startOption index out of bounds of options!")
+            raise ValueError("initialSelection index out of bounds of options!")
         
         if len(options) != len(skipExitTransitionFor):
             if len(options) < len(skipExitTransitionFor):
@@ -514,7 +514,7 @@ class Menus(Toolset):
         
         # Check arguments
         if initialSelection < 0 or initialSelection >= len(options):
-            raise Exception(ValueError, "startOption index out of bounds of options!")
+            raise ValueError("initialSelection index out of bounds of options!")
         
         if len(options) != len(skipExitTransitionFor):
             if len(options) < len(skipExitTransitionFor):
