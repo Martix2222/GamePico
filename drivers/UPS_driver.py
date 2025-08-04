@@ -75,7 +75,7 @@ class INA219:
             data = self.i2c.readfrom_mem(self.addr, address, 2)
             return ((data[0] * 256 ) + data[1])
         except OSError:
-            self.i2c = I2C(self.i2c_bus)
+            self.__init__(self.i2c_bus, self.addr)
             data = self.i2c.readfrom_mem(self.addr, address, 2)
             return ((data[0] * 256 ) + data[1])
 
