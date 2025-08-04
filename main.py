@@ -42,16 +42,16 @@ class Main(Menus):
 
 
     def main_loop(self):
-            choice = 0
+            choice = -1
             while True:
                 self.LCD.WasPressed.clear_queue()
                 choice = self.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51])
                 self.LCD.WasPressed.clear_queue()
-                if choice == 1:
+                if choice == 0:
                     # Play
                     snek = Snek(self.LCD)
                     snek.game_loop()
-                elif choice == 2:
+                elif choice == 1:
                     # Settings
                     choice = 0
                     while True:
@@ -71,11 +71,11 @@ class Main(Menus):
                             # Return to main menu
                             break
 
-                    choice = 0
-                elif choice == 3:
+                    choice = -1
+                elif choice == 2:
                     # Exit
                     break
-                elif choice == 4:
+                elif choice == 3:
                     # Controls
                     self.controls_tutorial()
                     pass

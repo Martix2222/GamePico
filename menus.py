@@ -29,13 +29,13 @@ class Menus(Toolset):
             logoDim (list[int]): Dimensions of the logo. (These are required to properly load the logo file)
             enableDebug (bool): If set to True timing statistics are rendered instead of the logo.
         Returns:
-            (int): The index (increased by one) of the option selected by the user.
+            (int): The index of the option selected by the user.
         """
         LCD = self.LCD
         theme = self.theme
         
-        tmpSelection = 0
-        selection = 0
+        tmpSelection = -1
+        selection = -1
 
         # Debug variables:
         startTime = time.time_ns()
@@ -99,27 +99,26 @@ class Menus(Toolset):
 
             if (LCD.WasPressed.up(clearQueue=True) or LCD.WasPressed.left(clearQueue=True)) and not abxyPressed:
                 tmpSelection -= 1
-                if tmpSelection < 1:
-                    tmpSelection = 4
+                if tmpSelection < 0:
+                    tmpSelection = len(options)-1
                 
             if (LCD.WasPressed.down(clearQueue=True) or LCD.WasPressed.right(clearQueue=True)) and not abxyPressed:
                 tmpSelection += 1
-                if tmpSelection > 4:
-                    tmpSelection = 1
+                if tmpSelection >= len(options):
+                    tmpSelection = 0
 
                 
             if LCD.WasPressed.ctrl():
                 selection = tmpSelection
 
 
-
-            if(LCD.WasPressed.keyA() or selection==1):
-                tmpSelection = 1
-                selection = 1
+            if(LCD.WasPressed.keyA() or selection==0):
+                tmpSelection = 0
+                selection = 0
                 reset_buttons()
                 buttonA.state = 2
                 buttonA.draw()
-            elif tmpSelection == 1:
+            elif tmpSelection == 0:
                 buttonA.state = 1
                 buttonA.draw()
             else:
@@ -127,13 +126,13 @@ class Menus(Toolset):
                 buttonA.draw()
                 
 
-            if(LCD.WasPressed.keyB() or selection==2):
-                tmpSelection = 2
-                selection = 2
+            if(LCD.WasPressed.keyB() or selection==1):
+                tmpSelection = 1
+                selection = 1
                 reset_buttons()
                 buttonB.state = 2
                 buttonB.draw()
-            elif tmpSelection == 2:
+            elif tmpSelection == 1:
                 buttonB.state = 1
                 buttonB.draw()
             else:
@@ -141,13 +140,13 @@ class Menus(Toolset):
                 buttonB.draw()
                 
 
-            if(LCD.WasPressed.keyX() or selection==3):
-                tmpSelection = 3
-                selection = 3
+            if(LCD.WasPressed.keyX() or selection==2):
+                tmpSelection = 2
+                selection = 2
                 reset_buttons()
                 buttonX.state = 2
                 buttonX.draw()
-            elif tmpSelection == 3:
+            elif tmpSelection == 2:
                 buttonX.state = 1
                 buttonX.draw()
             else:
@@ -155,13 +154,13 @@ class Menus(Toolset):
                 buttonX.draw()
 
 
-            if(LCD.WasPressed.keyY() or selection==4):
-                tmpSelection = 4
-                selection = 4
+            if(LCD.WasPressed.keyY() or selection==3):
+                tmpSelection = 3
+                selection = 3
                 reset_buttons()
                 buttonY.state = 2
                 buttonY.draw()
-            elif tmpSelection == 4:
+            elif tmpSelection == 3:
                 buttonY.state = 1
                 buttonY.draw()
             else:
@@ -174,14 +173,14 @@ class Menus(Toolset):
             showEndTime = time.time_ns()
 
 
-            if selection != 0:
-                if selection == 1:
+            if selection >= 0:
+                if selection == 0:
                     self.scene_circle_transition(240 - buttonA.width//2, 30, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
-                elif selection == 2:
+                elif selection == 1:
                     self.scene_circle_transition(240 - buttonB.width//2, 90, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
-                elif selection == 3:
+                elif selection == 2:
                     self.scene_circle_transition(240 - buttonX.width//2, 150, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
-                elif selection == 4:
+                elif selection == 3:
                     self.scene_circle_transition(240 - buttonY.width//2, 210, theme.primary_color, theme.background_color, theme.intro_circle_thickness, theme.intro_circle_thickness//2)
 
                 return selection
