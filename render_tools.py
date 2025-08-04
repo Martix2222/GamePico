@@ -56,16 +56,8 @@ class Toolset():
         *color* sets the color of the text
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
-        if font != 1:
-            if backgroundColor > -1:
-                self.LCD.fill_rect(x - len(string) * 4, y-4,len(string)*8, 8,backgroundColor)
-            self.LCD.text(string, x - len(string) * 4, y-4, color)
-        else:
-            xSize, ySize = self.calculate_text_dimensions(string, font, size)
-
-            if backgroundColor > -1:
-                self.LCD.fill_rect(x - int(xSize/2), y - int(ySize/2), xSize, ySize,backgroundColor)
-            self.FONTS.text(string, x - int(xSize/2), y  -int(ySize/2), size, color)
+        width, height = self.calculate_text_dimensions(string, font, size)
+        self.display_text(string, x - width//2, y - height//2, color, backgroundColor, font, size)
         
 
     def center_y_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
@@ -74,16 +66,8 @@ class Toolset():
         *color* sets the color of the text
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
-        if font != 1:
-            if backgroundColor != -1:
-                self.LCD.fill_rect(x, y-4, len(string)*8, 8,backgroundColor)
-            self.LCD.text(string, x , y-4, color)
-        else:
-            xSize, ySize = self.calculate_text_dimensions(string, font, size)
-
-            if backgroundColor > -1:
-                self.LCD.fill_rect(x, y - int(ySize/2), xSize, ySize,backgroundColor)
-            self.FONTS.text(string, x, y - int(ySize/2), size, color)
+        width, height = self.calculate_text_dimensions(string, font, size)
+        self.display_text(string, x, y - height//2, color, backgroundColor, font, size)
 
 
     def center_x_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
@@ -92,16 +76,8 @@ class Toolset():
         *color* sets the color of the text
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
-        if font != 1:
-            if backgroundColor != -1:
-                self.LCD.fill_rect(x - len(string) * 4, y, len(string)*8, 8,backgroundColor)
-            self.LCD.text(string, x - len(string) * 4, y, color)
-        else:
-            xSize, ySize = self.calculate_text_dimensions(string, font, size)
-
-            if backgroundColor > -1:
-                self.LCD.fill_rect(x - int(xSize/2), y, xSize, ySize,backgroundColor)
-            self.FONTS.text(string, x - int(xSize/2), y, size, color)
+        width, height = self.calculate_text_dimensions(string, font, size)
+        self.display_text(string, x - width//2, y, color, backgroundColor, font, size)
 
 
     def scene_roll_transition(self, direction:str, color:int, speed:int, pause:float):
