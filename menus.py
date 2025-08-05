@@ -64,12 +64,9 @@ class Menus(Toolset):
             self.update_animated_background(0, theme.background_color, theme.secondary_background_color)
 
             # Draw the title
-            titlePosition = [5, 100]
-            titleTextDimensions = self.calculate_text_dimensions(title, 1, 2)
-            self.LCD.fill_rect(titlePosition[0], titlePosition[1], titleTextDimensions[0]+theme.horizontal_reserve*4, titleTextDimensions[1]+theme.vertical_reserve*4//2, theme.button_border_color)
-            self.LCD.fill_rect(titlePosition[0]+theme.horizontal_reserve, titlePosition[1]+theme.vertical_reserve//2, titleTextDimensions[0]+theme.horizontal_reserve*2, titleTextDimensions[1]+theme.vertical_reserve*2//2, theme.secondary_color)
-            self.display_text(title, titlePosition[0]+theme.horizontal_reserve*2, titlePosition[1]+theme.vertical_reserve*2//2, theme.title_text_color,theme.secondary_color, 1, 2)
+            self.draw_title(5, 120, title, theme, 1, 2, [False, True])
             
+                        
             if enableDebug:
                 # Draw debug stats
                 freeMemoryKB = gc.mem_free()/1000
@@ -351,11 +348,7 @@ class Menus(Toolset):
                     button.draw()
 
             # Draw the title
-            titleTextDimensions = self.calculate_text_dimensions(title, 1, 2)
-            titlePosition = [5, (120 - (titleTextDimensions[1]+theme.vertical_reserve*4//2)//2)]
-            self.LCD.fill_rect(titlePosition[0], titlePosition[1], titleTextDimensions[0]+theme.horizontal_reserve*4, titleTextDimensions[1]+theme.vertical_reserve*4//2, theme.button_border_color)
-            self.LCD.fill_rect(titlePosition[0]+theme.horizontal_reserve, titlePosition[1]+theme.vertical_reserve//2, titleTextDimensions[0]+theme.horizontal_reserve*2, titleTextDimensions[1]+theme.vertical_reserve*2//2, theme.secondary_color)
-            self.display_text(title, titlePosition[0]+theme.horizontal_reserve*2, titlePosition[1]+theme.vertical_reserve*2//2, theme.title_text_color,theme.secondary_color, 1, 2)
+            self.draw_title(5, 120, title, theme, 1, 2, [False, True])
             
             LCD.show()
     
@@ -625,10 +618,6 @@ class Menus(Toolset):
                     button.draw()
 
             # Draw the title
-            titleTextDimensions = self.calculate_text_dimensions(title, 1, 2)
-            titlePosition = [60, (20 - (titleTextDimensions[1]+theme.vertical_reserve*4//2)//2)]
-            self.LCD.fill_rect(titlePosition[0], titlePosition[1], titleTextDimensions[0]+theme.horizontal_reserve*4, titleTextDimensions[1]+theme.vertical_reserve*4//2, theme.button_border_color)
-            self.LCD.fill_rect(titlePosition[0]+theme.horizontal_reserve, titlePosition[1]+theme.vertical_reserve//2, titleTextDimensions[0]+theme.horizontal_reserve*2, titleTextDimensions[1]+theme.vertical_reserve*2//2, theme.secondary_color)
-            self.display_text(title, titlePosition[0]+theme.horizontal_reserve*2, titlePosition[1]+theme.vertical_reserve*2//2, theme.title_text_color,theme.secondary_color, 1, 2)
+            self.draw_title(120, 5, title, theme, 1, 2, [True, False])
             
             LCD.show()

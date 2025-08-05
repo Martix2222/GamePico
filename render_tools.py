@@ -37,7 +37,7 @@ class Toolset():
             raise ValueError
 
 
-    def display_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
+    def draw_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
         if font != 1:
             if backgroundColor > -1:
                 self.LCD.fill_rect(x, y,len(string)*8, 8,backgroundColor)
@@ -57,7 +57,7 @@ class Toolset():
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
         width, height = self.calculate_text_dimensions(string, font, size)
-        self.display_text(string, x - width//2, y - height//2, color, backgroundColor, font, size)
+        self.draw_text(string, x - width//2, y - height//2, color, backgroundColor, font, size)
         
 
     def center_y_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
@@ -67,7 +67,7 @@ class Toolset():
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
         width, height = self.calculate_text_dimensions(string, font, size)
-        self.display_text(string, x, y - height//2, color, backgroundColor, font, size)
+        self.draw_text(string, x, y - height//2, color, backgroundColor, font, size)
 
 
     def center_x_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
@@ -77,7 +77,39 @@ class Toolset():
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
         width, height = self.calculate_text_dimensions(string, font, size)
-        self.display_text(string, x - width//2, y, color, backgroundColor, font, size)
+        self.draw_text(string, x - width//2, y, color, backgroundColor, font, size)
+
+
+    def draw_title(self, x:int, y:int, title:str, theme:themeClass, font:int=0, fontSize:int=0, center:list[bool] = [False, False]):
+        """ 
+        Draws a (menu or any other) title around the specified *x* and *y* coordinates centered based on the *center* argument.
+        Arguments:
+            x (int): The x coordinate.
+            y (int): The y coordinate.
+            title (str): The title string.
+            theme: The theme class that will determine the look of the title.
+            font (int): The font of the text in the title.
+            fontSize (int): The size of the font.
+            center (list): Determines whether to center the title around x and y coordinates:
+                [False, False] = "don\'t center"; [True, True] = "center around both"; 
+                [True, False] = "center on x"; [False, True] = "center on y"
+
+        """
+        titleTextDimensions = self.calculate_text_dimensions(title, font, fontSize)
+        titleDimensions = [theme.horizontal_reserve*2 + titleTextDimensions[0] + theme.title_border_thickness*2,
+                           theme.vertical_reserve*2 + titleTextDimensions[1] + theme.title_border_thickness*2]
+        
+        if center[0]:
+            x -= titleDimensions[0]//2
+        if center[1]:
+            y -= titleDimensions[1]//2
+        
+        self.LCD.fill_rect(x, y, titleDimensions[0], titleDimensions[1], theme.primary_color)
+        self.LCD.fill_rect(x+theme.title_border_thickness, y+theme.title_border_thickness, 
+                           titleDimensions[0]-theme.title_border_thickness*2, titleDimensions[1]-theme.title_border_thickness*2, theme.secondary_color)
+        
+        self.draw_text(title, x + theme.title_border_thickness + theme.horizontal_reserve, y + theme.title_border_thickness + theme.vertical_reserve,
+                       theme.title_text_color, theme.secondary_color, font, fontSize)
 
 
     def scene_roll_transition(self, direction:str, color:int, speed:int, pause:float):
@@ -210,7 +242,7 @@ class Button(Toolset):
             theme (themeClass): theme that determines the look of the button
             borderText (list): List with four items determining the text displayed on each edge of the button
             state (int): The state of the button:\n 0 = default; 1 = selected; 2 = pressed
-            center (list): whether to center the button around x and y coordinates:
+            center (list): Determines whether to center the button around x and y coordinates:
                 [False, False] = "don\'t center"; [True, True] = "center around both"; 
                 [True, False] = "center on x"; [False, True] = "center on y"
         """

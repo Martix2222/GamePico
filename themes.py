@@ -11,7 +11,9 @@ class Default_theme():
         self.background_color = color(255, 255, 255)
         self.secondary_background_color = color(200, 200, 200)
         self.title_text_color = color(255, 255, 255)
+        self.title_border_thickness = 5
         self.text_color = color(0, 0, 0)
+        self.text_line_spacing = 2
         self.vertical_reserve=10
         self.horizontal_reserve=6
         self.intro_circle_thickness=20
