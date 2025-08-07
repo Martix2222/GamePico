@@ -49,7 +49,7 @@ class Main(Menus):
                 self.LCD.WasPressed.clear_queue()
                 if choice == 0:
                     # Play
-                    snek = Snek(self.LCD)
+                    snek = Snek(self.LCD, self.theme)
                     snek.game_loop()
                 elif choice == 1:
                     # Settings

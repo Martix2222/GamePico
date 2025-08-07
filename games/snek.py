@@ -6,14 +6,27 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # color space to the color space supported by the display.
 
 from render_tools import Toolset
+from themes import Default_theme as themeClass
 
 color = displayClass.color
 
+richGameOverTitle = """
+   ___    _    __  __  ___ 
+  / __|  /_\\  |  \\/  || __|
+ | (_ | / _ \\ | |\\/| || _| 
+  \\___|/_/ \\_\\|_|  |_||___|
+   ___ __   __ ___  ___  _ 
+  / _ \\\\ \\ / /| __|| _ \\| |
+ | (_) |\\ V / | _| |   /|_|
+  \\___/  \\_/  |___||_|_\\(_)
+                           
+"""
+
 
 class Snek(Toolset):
-    def __init__(self, LCD:displayClass):
+    def __init__(self, LCD:displayClass, theme:themeClass):
         self.LCD = LCD
-        super().__init__(LCD)
+        super().__init__(LCD, theme)
 
         self.score = 0
         self.blockSize = 12
@@ -125,18 +138,19 @@ class Snek(Toolset):
             self.LCD.show(forceMinimumDuplicates=updateInterval_ms//self.LCD.frameTime_ms-1)
 
 
-    def game_over_screen(self, title="GAME OVER!", titleColor=color(255,0,0), scoreColor=color(255,170,0),
+    def game_over_screen(self, title=richGameOverTitle, titleColor=color(255,0,0), scoreColor=color(255,170,0),
                         introCircleColor=color(255,0,0), backgroundColor=color(255,255,255), introCircleThickness=10):
         for i in range(1, 170 + introCircleThickness, int(introCircleThickness/2)):
             self.LCD.ellipse(120, 120, i, i, introCircleColor, True)
             if i > 10:
                 self.LCD.ellipse(120, 120, i - introCircleThickness, i - introCircleThickness, backgroundColor, True)
-            if i > 100:
-                self.center_text(title, 120, 115, titleColor, font=1, size=3)
+            if i > 110:
+                self.center_text(title, 115, 120, titleColor)
             self.LCD.show()
         
         self.LCD.fill(backgroundColor)
-        self.center_text(title, 120, 115, titleColor, font=1, size=3)
+        # The font looks off center a little, so I put 115 instead of 120 as the x coordinate
+        self.center_text(title, 115, 90, titleColor)
         self.center_text("You scored " + str(self.score) + " points!", 120, 140, scoreColor, font=1, size=2)
 
         self.LCD.show()
