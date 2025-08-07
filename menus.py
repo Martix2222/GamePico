@@ -16,7 +16,7 @@ class Menus(Toolset):
         self.color = LCD.color
         self.theme = theme
 
-        super().__init__(LCD)
+        super().__init__(LCD, theme)
     
     def static_menu(self, title:str="Menu", options:list[str]=["Key A", "Key B", "Key C", "Key D"], logoPath:str="", logoPos:list[int]=[0,0], logoDim:list[int] = [0,0], enableDebug:bool = False) -> int:
         """ 

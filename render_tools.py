@@ -11,8 +11,9 @@ from themes import Default_theme as themeClass
 
 
 class Toolset():
-    def __init__(self, LCD:displayClass):
+    def __init__(self, LCD:displayClass, theme:themeClass):
         self.LCD = LCD
+        self.theme = theme
 
         self.FONTS = FONTS(LCD)
 
@@ -25,19 +26,66 @@ class Toolset():
             self.UPSavailable = False
 
 
-    def calculate_text_dimensions(self, string:str, font:int, size:int=0) -> list[int]:
+    def calculate_text_dimensions(self, string:str, font:int, size:int = 0) -> list[int]:
         """ 
-        Calculates the dimensions of rendered text based on it's length, font and size.  
+        Calculates the dimensions of rendered text based on it's length, font and size. 
+        If the text is multiline, the width returned will be the width of the widest line from the text.
         """
+        if "\n" in string:
+            width = 0
+            height = 0
+            for line in string.split("\n"):
+                lineDimensions = self.calculate_text_dimensions(line, font, size)
+                width = max(width, lineDimensions[0])
+                height += lineDimensions[1] + self.theme.text_line_spacing
+            
+            height -= self.theme.text_line_spacing
+            return [width, height]
+
         if font == 0:
             return [8*len(string), 8]
         elif font == 1:
             return FONTS.calculate_text_dimensions(string, size)
         else:
-            raise ValueError
+            raise ValueError("Currently supported fonts are only 0 and 1")
 
 
-    def draw_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
+    def draw_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
+        """ 
+        Draws text on the display on the *x* and *y* coordinates. The *x* and *y* coordinates specify the top left corner of the text.
+        Arguments:
+            string (str): The text to be rendered on the display.
+            x (int): The x coordinate.
+            y (int): The y coordinate.
+            color (int): The color of the text.
+            backgroundColor (int): The color of the background behind the text. If not set or set to -1 the background will be transparent.
+            font (int): The font of the text. (Currently only supported fonts are 0 and 1)
+            size (int): The size of the font. (Currently supported sizes are 1, 2 and 3 only for the font 1)
+            align (int): Specifies how the text will be aligned if it is multiline: 0 = left, 1 = center, 2 = right
+        """
+        if "\n" in string:
+            if not 0 <= align <= 3:
+                raise ValueError("align must be 0 (left), 1 (center) or 2 (right)")
+            
+            totalDimensions = self.calculate_text_dimensions(string, font, size)
+            lineY = y
+            for line in string.split("\n"):
+                lineDimensions = self.calculate_text_dimensions(line, font, size)
+
+                # Calculate the x coordinate of the current line based on the align argument
+                if align == 0:
+                    lineX = x
+                elif align == 1:
+                    lineX = x + (lineDimensions[0] - totalDimensions[0])//2
+                else:
+                    lineX = x + (lineDimensions[0] - totalDimensions[0])
+
+                self.draw_text(line, lineX, lineY, color, backgroundColor, font, size)
+                lineY += lineDimensions[1] + self.theme.text_line_spacing
+
+            return
+
+
         if font != 1:
             if backgroundColor > -1:
                 self.LCD.fill_rect(x, y,len(string)*8, 8,backgroundColor)
@@ -49,35 +97,37 @@ class Toolset():
                 self.LCD.fill_rect(x, y, xSize, ySize, backgroundColor)
             self.FONTS.text(string, x, y, size, color)
 
+        return
 
-    def center_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
+
+    def center_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
         """
         Centers the *string* on the given *x* and *y* coordinates
         *color* sets the color of the text
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
         width, height = self.calculate_text_dimensions(string, font, size)
-        self.draw_text(string, x - width//2, y - height//2, color, backgroundColor, font, size)
+        self.draw_text(string, x - width//2, y - height//2, color, backgroundColor, font, size, align)
         
 
-    def center_y_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
+    def center_y_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
         """
         Centers the *string* on the given *y* coordinate, but not the *x* coordinate
         *color* sets the color of the text
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
         width, height = self.calculate_text_dimensions(string, font, size)
-        self.draw_text(string, x, y - height//2, color, backgroundColor, font, size)
+        self.draw_text(string, x, y - height//2, color, backgroundColor, font, size, align)
 
 
-    def center_x_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0):
+    def center_x_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
         """
         Centers the *string* on the given *x* coordinate, but not the *y* coordinate
         *color* sets the color of the text
         *backgroundColor* sets the background color, if no value is given, the background will be transparent
         """
         width, height = self.calculate_text_dimensions(string, font, size)
-        self.draw_text(string, x - width//2, y, color, backgroundColor, font, size)
+        self.draw_text(string, x - width//2, y, color, backgroundColor, font, size, align)
 
 
     def draw_title(self, x:int, y:int, title:str, theme:themeClass, font:int=0, fontSize:int=0, center:list[bool] = [False, False]):
@@ -248,7 +298,7 @@ class Button(Toolset):
         """
 
         self.LCD = LCD
-        super().__init__(LCD)
+        super().__init__(LCD, theme)
         self.position = [x, y]
         self.text = text
         self.font = textFont

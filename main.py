@@ -61,6 +61,7 @@ class Main(Menus):
                         choice = self.vertical_scrolling_menu("Settings", options, choice, center, [True])
 
                         if choice == 0:
+                            # Open brightness setting
                             choice += self.brightness_menu_button(center)
                             if choice < 0:
                                 choice = 0
