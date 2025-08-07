@@ -50,7 +50,7 @@ class Toolset():
             raise ValueError("Currently supported fonts are only 0 and 1")
 
 
-    def draw_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
+    def draw_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=1, align:int=0):
         """ 
         Draws text on the display on the *x* and *y* coordinates. The *x* and *y* coordinates specify the top left corner of the text.
         Arguments:
@@ -100,7 +100,7 @@ class Toolset():
         return
 
 
-    def center_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
+    def center_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=1, align:int=0):
         """
         Centers the *string* on the given *x* and *y* coordinates
         *color* sets the color of the text
@@ -110,7 +110,7 @@ class Toolset():
         self.draw_text(string, x - width//2, y - height//2, color, backgroundColor, font, size, align)
         
 
-    def center_y_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
+    def center_y_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=1, align:int=0):
         """
         Centers the *string* on the given *y* coordinate, but not the *x* coordinate
         *color* sets the color of the text
@@ -120,7 +120,7 @@ class Toolset():
         self.draw_text(string, x, y - height//2, color, backgroundColor, font, size, align)
 
 
-    def center_x_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=0, align:int=0):
+    def center_x_text(self, string:str, x:int, y:int, color:int, backgroundColor:int=-1, font:int=0, size:int=1, align:int=0):
         """
         Centers the *string* on the given *x* coordinate, but not the *y* coordinate
         *color* sets the color of the text
