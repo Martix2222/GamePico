@@ -13,6 +13,11 @@ This project is currently compatible only with the original raspberry Pi Pico, P
 Currently I focus on making this project fully compatible with Raspberry Pi Pico equipped with the [Pico-LCD-1.3](https://www.waveshare.com/product/raspberry-pi/boards-kits/pico-lcd-1.3.htm) display from Waveshare.
 There is also support for the [Pico-UPS-A](https://www.waveshare.com/pico-ups-a.htm) module from Waveshare with integration into the main menus.
 
+## Recommended hardware
+1. [Raspberry Pi Pico 2 W](https://www.raspberrypi.com/products/raspberry-pi-pico-2/?variant=pico-2-w) \[Required\]
+2. [1.3inch LCD Display Module for Raspberry Pi Pico](https://www.waveshare.com/product/raspberry-pi/boards-kits/pico-lcd-1.3.htm) \[Required\]
+3. [UPS Module for Raspberry Pi Pico](https://www.waveshare.com/product/raspberry-pi/boards-kits/pico-ups-a.htm?___SID=U)
+4. [Micro SD Storage Expansion Board](https://www.aliexpress.com/item/1005005591145849.html) (From Aliexpress, because that's where I found it the cheapest)
 # Credits
 **_NOTE:_** Most of the libraries credited have been modified in order to function properly with this project.
 ## Reference code for module drivers
