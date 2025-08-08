@@ -32,7 +32,7 @@ class Main(Menus):
         if showSplash:
             self.LCD.fill(0xffff)
 
-            self.LCD.blit_image_file("logo 240x123.bin", 0, 58, 240, 123, 1000)
+            self.LCD.blit_image_file("assets/logo 240x123.bin", 0, 58, 240, 123, 1000)
             
             self.LCD.show()
             time.sleep(2)
@@ -45,7 +45,7 @@ class Main(Menus):
             choice = -1
             while True:
                 self.LCD.WasPressed.clear_queue()
-                choice = self.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "logo 100x51.bin", [20, 30], [100, 51])
+                choice = self.static_menu("Main Menu", ["Play", "Settings", "Exit", "Controls"], "assets/logo 100x51.bin", [20, 30], [100, 51])
                 self.LCD.WasPressed.clear_queue()
                 if choice == 0:
                     # Play
