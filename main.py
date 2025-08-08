@@ -6,7 +6,7 @@ import drivers.display_driver as display_driver
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
-from games.snek import Snek
+from games.snek.snek import Snek
 
 import themes
 
