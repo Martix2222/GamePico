@@ -4,7 +4,7 @@ My goal is to make a toolset that allows for creating games and other GUI applic
 
 # How to run
 1. Install MicroPython on your Pi Pico Board: \[Credit: [raspberrypi.com](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html)\]
-[![MicroPython tutorial](https://raw.githubusercontent.com/Martix2222/GamePico/refs/heads/master/.original%20assets/MicroPython%20tutorial%20thumb.webp)](https://www.raspberrypi.com/documentation/microcontrollers/images/MicroPython.webm)
+[![MicroPython tutorial](https://raw.githubusercontent.com/Martix2222/GamePico/refs/heads/master/.original%20assets/MicroPython%20tutorial%20thumb%20-%20cropped.svg)](https://www.raspberrypi.com/documentation/microcontrollers/images/MicroPython.webm)
 2. Upload all files and folders that do not start with a "." from this repository to the Pico. (This includes all assets!)
 3. Run main.py or restart the Pico and let it run automatically.
 
