@@ -52,8 +52,7 @@ class Snek(Toolset):
 
         # Remove the last block of the snake to finish the moving animation
         if len(self.snake) > self.score+self.minSnakeLen:
-            lastBlock = self.snake.pop()
-            # LCD.fill_rect(lastBlock[0], lastBlock[1], self.blockSize, self.blockSize, theme.background_color)
+            self.snake.pop()
     
 
     def draw_snake_head(self, snakeColor:int, eyeColor:int):
@@ -90,7 +89,6 @@ class Snek(Toolset):
             self.score += 1
             while self.appleCoords in self.snake:
                 self.appleCoords = [random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize, random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize]
-                # self.center_x_text("score: " + str(self.score), 120, 1, 0x0000, theme.background_color, 1, 2)
         else:
             LCD.ellipse(self.appleCoords[0] + int((self.blockSize - self.blockSize%2)/2), self.appleCoords[1] + int((self.blockSize - self.blockSize%2)/2), int((appleSize - appleSize%2)/2), int((appleSize - appleSize%2)/2), appleColor, True)
 
