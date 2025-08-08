@@ -2,6 +2,13 @@
 This is a complete overhaul of a project I started in my free time. This means that I have large parts of the code already written, but I decided to completely restructure the code by starting over in order to make it much more expandable and actually worthy of publishing on GitHub.
 My goal is to make a toolset that allows for creating games and other GUI applications for Raspberry Pi Pico equipped with a display.
 
+# How to run
+1. Install MicroPython on your Pi Pico Board: \[Credit: [raspberrypi.com](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html)\]
+[![MicroPython tutorial](https://raw.githubusercontent.com/Martix2222/GamePico/refs/heads/master/.original%20assets/MicroPython%20tutorial%20thumb.webp)](https://www.raspberrypi.com/documentation/microcontrollers/images/MicroPython.webm)
+2. Upload all files and folders that do not start with a "." from this repository to the Pico. (This includes all assets!)
+3. Run main.py or restart the Pico and let it run automatically.
+
+
 ## Compatibility
 This project is currently compatible only with the original raspberry Pi Pico, Pico 2 and Pico 2W. Because of RAM size restraints the project is currently incompatible with the raspberry Pi Pico W. It is possible to run it on raspberry Pi Pico W by flashing it with firmware of the non-W version because that frees up some RAM normally used by the wireless driver. However, I do not guarantee that this configuration will be stable.
 
