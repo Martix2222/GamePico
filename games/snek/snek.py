@@ -30,112 +30,130 @@ class Snek(Toolset):
 
         self.score = 0
         self.blockSize = 12
-        self.headSize = 2
+        self.additionalHeadSize = 2
         self.eyeSize = 5
         self.eyeEdgeDistance = 2
+        self.minSnakeLen = 2
+
+    
+    def move_snake(self):
+        theme = self.theme
+        LCD = self.LCD
+
+        # Add a new block to the beginning of the snake list to move it forward
+        if self.heading == "north":
+            self.snake.insert(0, [self.snake[0][0], self.snake[0][1] - self.blockSize])
+        elif self.heading == "south":
+            self.snake.insert(0, [self.snake[0][0], self.snake[0][1] + self.blockSize])
+        elif self.heading == "west":
+            self.snake.insert(0, [self.snake[0][0] - self.blockSize, self.snake[0][1]])
+        elif self.heading == "east":
+            self.snake.insert(0, [self.snake[0][0] + self.blockSize, self.snake[0][1]])
+
+        # Remove the last block of the snake to finish the moving animation
+        if len(self.snake) > self.score+self.minSnakeLen:
+            lastBlock = self.snake.pop()
+            # LCD.fill_rect(lastBlock[0], lastBlock[1], self.blockSize, self.blockSize, theme.background_color)
+    
+
+    def draw_snake_head(self, snakeColor:int, eyeColor:int):
+        # theme = self.theme
+        LCD = self.LCD
+
+        # LCD.fill_rect(self.snake[1][0]-self.additionalHeadSize, self.snake[1][1]-self.additionalHeadSize, self.blockSize + self.additionalHeadSize*2, self.blockSize + self.additionalHeadSize*2, theme.background_color)
+        LCD.fill_rect(self.snake[0][0]-self.additionalHeadSize, self.snake[0][1]-self.additionalHeadSize, self.blockSize + self.additionalHeadSize*2, self.blockSize + self.additionalHeadSize*2, snakeColor)
+
+        if self.heading == "south":
+            LCD.fill_rect(self.snake[0][0]-self.additionalHeadSize+self.eyeEdgeDistance, self.snake[0][1]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
+            LCD.fill_rect(self.snake[0][0]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.snake[0][1]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
+        elif self.heading == "north":
+            LCD.fill_rect(self.snake[0][0]-self.additionalHeadSize+self.eyeEdgeDistance, self.snake[0][1]-self.additionalHeadSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
+            LCD.fill_rect(self.snake[0][0]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.snake[0][1]-self.additionalHeadSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
+        elif self.heading == "west":
+            LCD.fill_rect(self.snake[0][0]-self.additionalHeadSize+self.eyeEdgeDistance, self.snake[0][1]-self.additionalHeadSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
+            LCD.fill_rect(self.snake[0][0]-self.additionalHeadSize+self.eyeEdgeDistance, self.snake[0][1]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
+        elif self.heading == "east":
+            LCD.fill_rect(self.snake[0][0]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.snake[0][1]-self.additionalHeadSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
+            LCD.fill_rect(self.snake[0][0]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.snake[0][1]+self.additionalHeadSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, eyeColor)
 
 
-    def game_loop(self, updateInterval_ms:int=250, backgroundColor=color(255,255,255), snakeColor=color(240,0,0), stripeColor=color(0,0,0)):
-        self.LCD.fill(backgroundColor)
+    def draw_update_apple(self, appleColor:int):
+        """ 
+        Checks whether the snake collected the apple and if so it updates the apples' position. It also draws the apple on the display.
+        Arguments:
+            appleColor (int): The color of the apple.
+        """
+        LCD = self.LCD
+        appleSize = self.blockSize
+
+        if self.appleCoords == self.snake[0]:
+            self.score += 1
+            while self.appleCoords in self.snake:
+                self.appleCoords = [random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize, random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize]
+                # self.center_x_text("score: " + str(self.score), 120, 1, 0x0000, theme.background_color, 1, 2)
+        else:
+            LCD.ellipse(self.appleCoords[0] + int((self.blockSize - self.blockSize%2)/2), self.appleCoords[1] + int((self.blockSize - self.blockSize%2)/2), int((appleSize - appleSize%2)/2), int((appleSize - appleSize%2)/2), appleColor, True)
+
+
+
+    def game_loop(self, updateInterval_ms:int=250, snakeColor:int=color(240,0,0), stripeColor:int=color(0,0,0), eyeColor:int=color(0,0,0), appleColor:int=color(50, 250, 0)):
+        theme = self.theme
+        LCD = self.LCD
         self.score = 0
 
-        heading = "south"
-        traveledInHeading = 0
-        
-        snake = [[120 - 120%self.blockSize,0]]
 
-        appleCoords = [120, 120]
+        self.heading = "south"
         
-        appleSize = self.blockSize
+        self.snake = [[120 - 120%self.blockSize,0]]
+
+        self.appleCoords = [120, 120]
+        
         lastUpdate = time.time_ns()
 
         while(True):
+            # Limit the update rate (and thus set the difficulty [TODO]):
             time.sleep_ms(max(int(updateInterval_ms - ((time.time_ns()-lastUpdate))/1000000), 1))
             lastUpdate = time.time_ns()
 
-            if(self.LCD.WasPressed.up(clearQueue=True) and not heading == "south" and not heading == "north"):
-                heading = 'north'
-                traveledInHeading = 0
-            elif(self.LCD.WasPressed.down(clearQueue=True) and not heading == "north" and not heading == "south"):
-                heading = 'south'
-                traveledInHeading = 0
-            elif(self.LCD.WasPressed.left(clearQueue=True) and not heading == "east" and not heading == "west"):
-                heading = 'west'
-                traveledInHeading = 0
-            elif(self.LCD.WasPressed.right(clearQueue=True) and not heading == "west" and not heading == "east"):
-                heading = 'east'
-                traveledInHeading = 0
+            LCD.fill(theme.background_color)
 
+            # Check for button presses and update the current heading accordingly
+            if(LCD.WasPressed.up(clearQueue=True) and not (self.heading == "south" or self.heading == "north")):
+                self.heading = 'north'
+
+            elif(LCD.WasPressed.down(clearQueue=True) and not (self.heading == "north" or self.heading == "south")):
+                self.heading = 'south'
+
+            elif(LCD.WasPressed.left(clearQueue=True) and not (self.heading == "east" or self.heading == "west")):
+                self.heading = 'west'
+
+            elif(LCD.WasPressed.right(clearQueue=True) and not (self.heading == "west" or self.heading == "east")):
+                self.heading = 'east'
+
+            self.move_snake()
             
-            if len(snake) < self.score+5:
-                if heading == "north":
-                    snake.insert(0, [snake[0][0], snake[0][1] - self.blockSize])
-                elif heading == "south":
-                    snake.insert(0, [snake[0][0], snake[0][1] + self.blockSize])
-                elif heading == "west":
-                    snake.insert(0, [snake[0][0] - self.blockSize, snake[0][1]])
-                elif heading == "east":
-                    snake.insert(0, [snake[0][0] + self.blockSize, snake[0][1]])         
-            else:
-                if heading == "north":
-                        snake.insert(0, [snake[0][0], snake[0][1] - self.blockSize])
-                elif heading == "south":
-                        snake.insert(0, [snake[0][0], snake[0][1] + self.blockSize])
-                elif heading == "west":
-                        snake.insert(0, [snake[0][0] - self.blockSize, snake[0][1]])
-                elif heading == "east":
-                        snake.insert(0, [snake[0][0] + self.blockSize, snake[0][1]])
-                lastBlock = snake.pop()
-                self.LCD.fill_rect(lastBlock[0], lastBlock[1], self.blockSize, self.blockSize, backgroundColor)
+            # Draw the entire snake (back to front, such that the head is always on top)
+            for i in range(len(self.snake)-1, -1, -1):
+                if i == 0:
+                    self.draw_snake_head(snakeColor, eyeColor)
+                else:
+                    LCD.fill_rect(self.snake[i][0], self.snake[i][1], self.blockSize, self.blockSize, snakeColor)
+                    LCD.line(self.snake[i][0], self.snake[i][1], self.snake[i][0]+self.blockSize-1, self.snake[i][1]+self.blockSize-1, stripeColor)
+                    LCD.line(self.snake[i][0]+self.blockSize-1, self.snake[i][1], self.snake[i][0], self.snake[i][1]+self.blockSize-1, stripeColor)
             
-            
-            self.LCD.fill_rect(snake[1][0]-self.headSize, snake[1][1]-self.headSize, self.blockSize + self.headSize*2, self.blockSize + self.headSize*2, backgroundColor)
-            self.LCD.fill_rect(snake[0][0]-self.headSize, snake[0][1]-self.headSize, self.blockSize + self.headSize*2, self.blockSize + self.headSize*2, snakeColor)
 
-            if heading == "south":
-                self.LCD.fill_rect(snake[0][0]-self.headSize+self.eyeEdgeDistance, snake[0][1]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
-                self.LCD.fill_rect(snake[0][0]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, snake[0][1]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
-            elif heading == "north":
-                self.LCD.fill_rect(snake[0][0]-self.headSize+self.eyeEdgeDistance, snake[0][1]-self.headSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
-                self.LCD.fill_rect(snake[0][0]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, snake[0][1]-self.headSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
-            elif heading == "west":
-                self.LCD.fill_rect(snake[0][0]-self.headSize+self.eyeEdgeDistance, snake[0][1]-self.headSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
-                self.LCD.fill_rect(snake[0][0]-self.headSize+self.eyeEdgeDistance, snake[0][1]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
-            elif heading == "east":
-                self.LCD.fill_rect(snake[0][0]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, snake[0][1]-self.headSize+self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
-                self.LCD.fill_rect(snake[0][0]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, snake[0][1]+self.headSize+self.blockSize-self.eyeSize-self.eyeEdgeDistance, self.eyeSize, self.eyeSize, 0x0000)
+            self.draw_update_apple(appleColor)
 
-            if len(snake) > 1:
-                self.LCD.fill_rect(snake[1][0], snake[1][1], self.blockSize, self.blockSize, snakeColor)
-                self.LCD.line(snake[1][0], snake[1][1], snake[1][0]+self.blockSize-1, snake[1][1]+self.blockSize-1, stripeColor)
-                self.LCD.line(snake[1][0]+self.blockSize-1, snake[1][1], snake[1][0], snake[1][1]+self.blockSize-1, stripeColor)
-
-            if len(snake) > 2:
-                self.LCD.fill_rect(snake[2][0], snake[2][1], self.blockSize, self.blockSize, snakeColor)
-                self.LCD.line(snake[2][0], snake[2][1], snake[2][0]+self.blockSize-1, snake[2][1]+self.blockSize-1, stripeColor)
-                self.LCD.line(snake[2][0]+self.blockSize-1, snake[2][1], snake[2][0], snake[2][1]+self.blockSize-1, stripeColor)
-
-            if len(snake) > 3:
-                self.LCD.fill_rect(snake[3][0], snake[3][1], self.blockSize, self.blockSize, snakeColor)
-                self.LCD.line(snake[3][0], snake[3][1], snake[3][0]+self.blockSize-1, snake[3][1]+self.blockSize-1, stripeColor)
-                self.LCD.line(snake[3][0]+self.blockSize-1, snake[3][1], snake[3][0], snake[3][1]+self.blockSize-1, stripeColor)
-
-
-            self.LCD.ellipse(appleCoords[0] + int((self.blockSize - self.blockSize%2)/2), appleCoords[1] + int((self.blockSize - self.blockSize%2)/2), int((appleSize - appleSize%2)/2), int((appleSize - appleSize%2)/2), color(50, 250, 0), True)
-
-            if appleCoords == snake[0]:
-                self.score += 1
-                while appleCoords in snake:
-                    appleCoords = [random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize, random.randint(1, int((240 - 240%self.blockSize)/self.blockSize))*self.blockSize - self.blockSize]
-                self.center_x_text("score: " + str(self.score), 120, 1, 0x0000, backgroundColor, 1, 2)
+            # Draw the score
             self.center_x_text("score: " + str(self.score), 120, 1, 0x0000, -1, 1, 2)
 
-            if 240 <= snake[0][0] or snake[0][0] < 0 or 240 <= snake[0][1] or snake[0][1] < 0 or snake[0] in snake[1:]:
+            if LCD.width <= self.snake[0][0] or self.snake[0][0] < 0 or LCD.height <= self.snake[0][1] or self.snake[0][1] < 0 or self.snake[0] in self.snake[3:]:
                 self.game_over_screen()
                 return 1
 
-            traveledInHeading += 1
-            self.LCD.show(forceMinimumDuplicates=updateInterval_ms//self.LCD.frameTime_ms-1)
+            # Update the screen and if recording is enabled duplicate the screenshots such that
+            # when the recording is exported the frame timing should be more or less right.
+            LCD.show(forceMinimumDuplicates=updateInterval_ms//LCD.frameTime_ms-1)
 
 
     def game_over_screen(self, title=richGameOverTitle, titleColor=color(255,0,0), scoreColor=color(255,170,0),
