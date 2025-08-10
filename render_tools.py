@@ -26,7 +26,7 @@ class Toolset():
             self.UPSavailable = False
 
 
-    def calculate_text_dimensions(self, string:str, font:int, size:int = 0) -> list[int]:
+    def calculate_text_dimensions(self, string:str, font:int, size:int = 1) -> list[int]:
         """ 
         Calculates the dimensions of rendered text based on it's length, font and size. 
         If the text is multiline, the width returned will be the width of the widest line from the text.
@@ -76,9 +76,9 @@ class Toolset():
                 if align == 0:
                     lineX = x
                 elif align == 1:
-                    lineX = x + (lineDimensions[0] - totalDimensions[0])//2
+                    lineX = x + (totalDimensions[0] - lineDimensions[0])//2
                 else:
-                    lineX = x + (lineDimensions[0] - totalDimensions[0])
+                    lineX = x + (totalDimensions[0] - lineDimensions[0])
 
                 self.draw_text(line, lineX, lineY, color, backgroundColor, font, size)
                 lineY += lineDimensions[1] + self.theme.text_line_spacing
@@ -159,7 +159,7 @@ class Toolset():
                            titleDimensions[0]-theme.title_border_thickness*2, titleDimensions[1]-theme.title_border_thickness*2, theme.secondary_color)
         
         self.draw_text(title, x + theme.title_border_thickness + theme.horizontal_reserve, y + theme.title_border_thickness + theme.vertical_reserve,
-                       theme.title_text_color, theme.secondary_color, font, fontSize)
+                       theme.title_text_color, theme.secondary_color, font, fontSize, int(center[0]))
 
 
     def scene_roll_transition(self, direction:str, color:int, speed:int, pause:float):
