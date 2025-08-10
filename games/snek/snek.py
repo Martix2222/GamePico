@@ -59,7 +59,6 @@ class Snek(Menus):
 
     def difficulty_selection(self) -> int:
         selectionIndex = self.horizontal_scrolling_menu("Game\ndifficulty:", list(self.difficultyValues.keys()), 0, [120, 120])
-        print(list(self.difficultyValues.keys()))
         return self.difficultyValues[list(self.difficultyValues.keys())[selectionIndex]]  
 
     
