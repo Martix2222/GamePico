@@ -61,6 +61,10 @@ class Menus(Toolset):
 
 
         while(True):
+            # This sleep is here because when it wasn't, there were
+            # issues when connecting the Pico via USB while in the menu
+            time.sleep_ms(5)
+            
             self.update_animated_background(0, theme.background_color, theme.secondary_background_color)
 
             # Draw the title
@@ -286,7 +290,7 @@ class Menus(Toolset):
                     update = True
                     selection = tmpSelection
 
-            # Once an up or down button is pressed the targetScrollOffset value is changed and this part of the code
+            # When an up or down button is pressed the targetScrollOffset value is changed and this part of the code
             # updates the currentScrollOffset until it matches the targetScrollOffset.
             # This makes sure that the selected button is always on the center coordinates.
             if currentScrollOffset != targetScrollOffset:
@@ -303,7 +307,7 @@ class Menus(Toolset):
                     button.position[1] += change
 
                 currentScrollOffset += change
-            else:
+            elif not update:
                 time.sleep_ms(100) # Limit the update rate when nothing is happening
                 if selection > -1:
                     if not skipExitTransitionFor[selection]:
@@ -343,7 +347,7 @@ class Menus(Toolset):
             LCD.fill(theme.background_color)
 
             for button in buttons:
-                # Skip buttons outside of the display
+                # Skip buttons outside the bounds of the display
                 if (button.position[1]+button.height) > 0 and button.position[1] < self.LCD.height: 
                     button.draw()
 
@@ -456,6 +460,7 @@ class Menus(Toolset):
         allPressed = False
         while not allPressed:
 
+            # Check if all buttons were pressed
             for button in buttons:
                 if button.state == 2:
                     allPressed = True
@@ -587,7 +592,7 @@ class Menus(Toolset):
                     button.position[0] += change
 
                 currentScrollOffset += change
-            else:
+            elif not update:
                 time.sleep_ms(100) # Limit the update rate when nothing is happening
                 if selection > -1:
                     if not skipExitTransitionFor[selection]:
