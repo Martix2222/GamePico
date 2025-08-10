@@ -1,11 +1,12 @@
 import time
 import random
+from collections import OrderedDict
 
 from drivers.display_driver import LCD_1inch3 as displayClass
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
-from render_tools import Toolset
+from menus import Menus
 from themes import Default_theme as themeClass
 
 color = displayClass.color
@@ -23,10 +24,16 @@ richGameOverTitle = """
 """
 
 
-class Snek(Toolset):
+class Snek(Menus):
     def __init__(self, LCD:displayClass, theme:themeClass):
         self.LCD = LCD
         super().__init__(LCD, theme)
+
+        # The keys are the description and the values are the minimum update interval limit in the game_loop in ms.
+        # The limit is minimum is because the game logic and drawing graphics takes some time (about 60 ms).
+        # So if the limit is set to anything below that, it still takes at least that time to move onto the next frame.
+        
+        self.difficultyValues = OrderedDict({"Easy": 300, "Medium": 200, "Hard": 100, "Good luck": 0})
 
         self.score = 0
         self.blockSize = 12
@@ -36,10 +43,27 @@ class Snek(Toolset):
         self.minSnakeLen = 2
 
     
-    def move_snake(self):
-        theme = self.theme
-        LCD = self.LCD
+    def start(self):
+        # Ask the user to select the game difficulty
+        minUpdateInterval_ms = self.difficulty_selection()
 
+        # Initialize variables
+        self.score = 0
+        self.heading = "south"
+        self.snake = [[120 - 120%self.blockSize,0]]
+        self.appleCoords = [120, 120]
+        
+        # Start the game
+        self.game_loop(minUpdateInterval_ms)
+
+
+    def difficulty_selection(self) -> int:
+        selectionIndex = self.horizontal_scrolling_menu("Game\ndifficulty:", list(self.difficultyValues.keys()), 0, [120, 120])
+        print(list(self.difficultyValues.keys()))
+        return self.difficultyValues[list(self.difficultyValues.keys())[selectionIndex]]  
+
+    
+    def move_snake(self):
         # Add a new block to the beginning of the snake list to move it forward
         if self.heading == "north":
             self.snake.insert(0, [self.snake[0][0], self.snake[0][1] - self.blockSize])
@@ -94,23 +118,15 @@ class Snek(Toolset):
 
 
 
-    def game_loop(self, updateInterval_ms:int=250, snakeColor:int=color(240,0,0), stripeColor:int=color(0,0,0), eyeColor:int=color(0,0,0), appleColor:int=color(50, 250, 0)):
+    def game_loop(self, minUpdateInterval_ms:int=250, snakeColor:int=color(240,0,0), stripeColor:int=color(0,0,0), eyeColor:int=color(0,0,0), appleColor:int=color(50, 250, 0)):
         theme = self.theme
         LCD = self.LCD
-        self.score = 0
 
-
-        self.heading = "south"
-        
-        self.snake = [[120 - 120%self.blockSize,0]]
-
-        self.appleCoords = [120, 120]
-        
         lastUpdate = time.time_ns()
 
         while(True):
             # Limit the update rate (and thus set the difficulty [TODO]):
-            time.sleep_ms(max(int(updateInterval_ms - ((time.time_ns()-lastUpdate))/1000000), 1))
+            time.sleep_ms(max(int(minUpdateInterval_ms - ((time.time_ns()-lastUpdate))/1000000), 1))
             lastUpdate = time.time_ns()
 
             LCD.fill(theme.background_color)
@@ -151,7 +167,7 @@ class Snek(Toolset):
 
             # Update the screen and if recording is enabled duplicate the screenshots such that
             # when the recording is exported the frame timing should be more or less right.
-            LCD.show(forceMinimumDuplicates=updateInterval_ms//LCD.frameTime_ms-1)
+            LCD.show(forceMinimumDuplicates=minUpdateInterval_ms//LCD.frameTime_ms-1)
 
 
     def game_over_screen(self, title=richGameOverTitle, titleColor=color(255,0,0), scoreColor=color(255,170,0),

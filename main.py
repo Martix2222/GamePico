@@ -50,7 +50,7 @@ class Main(Menus):
                 if choice == 0:
                     # Play
                     snek = Snek(self.LCD, self.theme)
-                    snek.game_loop()
+                    snek.start()
                 elif choice == 1:
                     # Settings
                     choice = 0
@@ -62,6 +62,7 @@ class Main(Menus):
 
                         if choice == 0:
                             # Open brightness setting
+                            self.LCD.WasPressed.clear_queue()
                             choice += self.brightness_menu_button(center)
                             if choice < 0:
                                 choice = 0
