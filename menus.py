@@ -564,11 +564,15 @@ class Menus(Toolset):
                 if LCD.WasPressed.left(clearQueue=True) and tmpSelection > 0:
                     update = True
                     tmpSelection -= 1
+                    targetScrollOffset += buttons[tmpSelection+1].width//2
+                    targetScrollOffset -= buttons[tmpSelection].width//2
                     targetScrollOffset += buttons[tmpSelection+1].position[0] - buttons[tmpSelection].position[0]                
 
                 if LCD.WasPressed.right(clearQueue=True) and tmpSelection < len(buttons)-1:
                     update = True
                     tmpSelection += 1
+                    targetScrollOffset += buttons[tmpSelection-1].width//2
+                    targetScrollOffset -= buttons[tmpSelection].width//2
                     targetScrollOffset -= buttons[tmpSelection].position[0] - buttons[tmpSelection-1].position[0]
 
                 if LCD.WasPressed.ctrl():
