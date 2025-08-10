@@ -154,11 +154,6 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.buffer = bytearray(self.height * self.width * 2)
         super().__init__(self.buffer, self.width, self.height, framebuf.RGB565)
         self.init_display()
-        
-        self.red   =   0x07E0
-        self.green =   0x001f
-        self.blue  =   0xf800
-        self.white =   0xffff
 
         self.currentBrightness = 100.0
         self.brightness(self.currentBrightness)
@@ -393,9 +388,16 @@ class LCD_1inch3(framebuf.FrameBuffer):
             width (int): width of the image
             height (int): height of the image
             memLimit (int): maximum amount of bytes of memory used to load the image
-        """        
-        fileSize = os.stat(filePath)
-        fileSize = fileSize[6]
+        """
+        # Skip the head data of the image if it is present 
+        try:     
+            fileSize = os.stat(filePath)[6]
+        except OSError:
+            self.fill_rect(x, y, width, height, self.color(255, 0, 0))
+            self.text("Image not found:", x, y, 0x0000)
+            self.text(filePath, x, y+8, 0x0000)
+            return
+
 
         if fileSize == ((width*height*2)+8):
             blockOffset = 8
@@ -421,6 +423,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
               
 
             imageFile.close()
+
 
     @staticmethod
     def color(R:int,G:int,B:int):
