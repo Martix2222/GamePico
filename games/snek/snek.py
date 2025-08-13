@@ -15,12 +15,10 @@ color = displayClass.color
 class Snek(Menus):
     def __init__(self, LCD:displayClass, theme:themeClass):
         super().__init__(LCD, theme)
-        self.LCD = LCD
 
         # The keys are the description and the values are the minimum update interval limit in the game_loop in ms.
         # The limit is minimum is because the game logic and drawing graphics takes some time (about 60 ms).
         # So if the limit is set to anything below that, it still takes at least that time to move onto the next frame.
-        
         self.difficultyValues = OrderedDict({"Easy": 300, "Medium": 200, "Hard": 100, "Good luck": 0})
 
         self.score = 0

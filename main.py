@@ -18,12 +18,12 @@ freq(250_000_000)
 class Main(Menus):
     def __init__(self) -> None:
         # Initialize the display
-        self.LCD = display_driver.LCD_1inch3()
+        LCD = display_driver.LCD_1inch3()
 
-        self.color = display_driver.LCD_1inch3.color
+        self.color = LCD.color
 
-        self.theme = themes.Default_theme()
-        super().__init__(self.LCD, self.theme)
+        theme = themes.Default_theme()
+        super().__init__(LCD, theme)
 
     
     def start(self, showSplash = True, recordSession = False):
@@ -33,7 +33,7 @@ class Main(Menus):
             self.LCD.fill(0xffff)
 
             self.LCD.blit_image_file("assets/logo 240x123.bin", 0, 58, 240, 123, 1000)
-            
+
             self.LCD.show()
             time.sleep(2)
             self.LCD.show()
