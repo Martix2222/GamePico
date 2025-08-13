@@ -154,7 +154,7 @@ class Toolset():
         if center[1]:
             y -= titleDimensions[1]//2
         
-        self.LCD.fill_rect(x, y, titleDimensions[0], titleDimensions[1], theme.primary_color)
+        self.rounded_rect(x, y, titleDimensions[0], titleDimensions[1], theme.primary_color, theme.title_border_thickness)
         self.LCD.fill_rect(x+theme.title_border_thickness, y+theme.title_border_thickness, 
                            titleDimensions[0]-theme.title_border_thickness*2, titleDimensions[1]-theme.title_border_thickness*2, theme.secondary_color)
         
@@ -189,6 +189,38 @@ class Toolset():
                 time.sleep(pause)
         
         return
+    
+
+    def rounded_rect(self, x:int, y:int, width:int, height:int, color:int, roundRadius:int):
+        """ 
+        Draws a rounded rectangle on a given position.
+        Arguments:
+            x (int): The x coordinate.
+            y (int): The y coordinate.
+            width (int): The width of the rectangle (including the rounding).
+            height (int): The height of the rectangle (including the rounding).
+            color (int): The fill color of the rectangle in the RGB565 format.
+            roundRadius (int): The radius of the rounded corners.
+        """
+
+        assert width >= roundRadius*2
+        assert height >= roundRadius*2
+
+        LCD = self.LCD
+
+        # Draw the rounded corners:
+        LCD.ellipse(x+width-roundRadius-1, y+roundRadius, roundRadius, roundRadius, 
+                    color, True, 0b0001)
+        LCD.ellipse(x+roundRadius, y+roundRadius, roundRadius, roundRadius, 
+                    color, True, 0b0010)
+        LCD.ellipse(x+roundRadius, y+height-roundRadius-1, roundRadius, roundRadius, 
+                    color, True, 0b0100)
+        LCD.ellipse(x+width-roundRadius-1, y+height-roundRadius-1, roundRadius, roundRadius, 
+                    color, True, 0b1000)
+        
+        # Draw the rest of the tile:
+        LCD.fill_rect(x+roundRadius, y, width-roundRadius*2, height, color)
+        LCD.fill_rect(x, y+roundRadius, width, height-roundRadius*2, color)
 
 
     def scene_circle_transition(self, x:int, y:int, circleColor:int, resultColor:int, circleThickness:int=20, step=4):
