@@ -441,6 +441,13 @@ class LCD_1inch3(framebuf.FrameBuffer):
         # Switch the two bytes around to circumvent color handling bug in framebuf library
         return ((convertedColor & 0x00ff) << 8) | ((convertedColor & 0xff00)>>8)
     
+    @staticmethod
+    def calculate_luminance(R:int, G:int, B:int):
+        """ 
+        Calculates and returns the luminance of a given RGB888 color code.
+        """
+        return 0.2126 * R + 0.7152 * G + 0.0722 * B 
+    
     def brightness(self, brightness:float = -1.0) -> float:
         """ 
         Gets or sets the brightness of the display.
