@@ -28,3 +28,15 @@ class Default_theme():
         self.button_pressed_text_color = color(255, 255, 255)
         self.button_border_thickness = 4
         self.button_spacing = 10
+
+        self.richGameOverTitle = """
+   ___    _    __  __  ___ 
+  / __|  /_\\  |  \\/  || __|
+ | (_ | / _ \\ | |\\/| || _| 
+  \\___|/_/ \\_\\|_|  |_||___|
+   ___ __   __ ___  ___  _ 
+  / _ \\\\ \\ / /| __|| _ \\| |
+ | (_) |\\ V / | _| |   /|_|
+  \\___/  \\_/  |___||_|_\\(_)
+                           
+"""

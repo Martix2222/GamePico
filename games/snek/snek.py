@@ -11,23 +11,11 @@ from themes import Default_theme as themeClass
 
 color = displayClass.color
 
-richGameOverTitle = """
-   ___    _    __  __  ___ 
-  / __|  /_\\  |  \\/  || __|
- | (_ | / _ \\ | |\\/| || _| 
-  \\___|/_/ \\_\\|_|  |_||___|
-   ___ __   __ ___  ___  _ 
-  / _ \\\\ \\ / /| __|| _ \\| |
- | (_) |\\ V / | _| |   /|_|
-  \\___/  \\_/  |___||_|_\\(_)
-                           
-"""
-
 
 class Snek(Menus):
     def __init__(self, LCD:displayClass, theme:themeClass):
-        self.LCD = LCD
         super().__init__(LCD, theme)
+        self.LCD = LCD
 
         # The keys are the description and the values are the minimum update interval limit in the game_loop in ms.
         # The limit is minimum is because the game logic and drawing graphics takes some time (about 60 ms).
@@ -161,7 +149,7 @@ class Snek(Menus):
             self.center_x_text("score: " + str(self.score), 120, 1, 0x0000, -1, 1, 2)
 
             if LCD.width <= self.snake[0][0] or self.snake[0][0] < 0 or LCD.height <= self.snake[0][1] or self.snake[0][1] < 0 or self.snake[0] in self.snake[3:]:
-                self.game_over_screen()
+                self.game_over_screen(theme.richGameOverTitle)
                 return 1
 
             # Update the screen and if recording is enabled duplicate the screenshots such that
@@ -169,8 +157,8 @@ class Snek(Menus):
             LCD.show(forceMinimumDuplicates=minUpdateInterval_ms//LCD.frameTime_ms-1)
 
 
-    def game_over_screen(self, title=richGameOverTitle, titleColor=color(255,0,0), scoreColor=color(255,170,0),
-                        introCircleColor=color(255,0,0), backgroundColor=color(255,255,255), introCircleThickness=10):
+    def game_over_screen(self, title:str, titleColor:int=color(255,0,0), scoreColor:int=color(255,170,0),
+                        introCircleColor:int=color(255,0,0), backgroundColor:int=color(255,255,255), introCircleThickness:int=10):
         for i in range(1, 170 + introCircleThickness, int(introCircleThickness/2)):
             self.LCD.ellipse(120, 120, i, i, introCircleColor, True)
             if i > 10:
