@@ -154,7 +154,7 @@ class Toolset():
         if center[1]:
             y -= titleDimensions[1]//2
         
-        self.rounded_rect(x, y, titleDimensions[0], titleDimensions[1], theme.primary_color, theme.title_border_thickness)
+        self.rounded_rect(x, y, titleDimensions[0], titleDimensions[1], theme.title_border_thickness, theme.primary_color)
         self.LCD.fill_rect(x+theme.title_border_thickness, y+theme.title_border_thickness, 
                            titleDimensions[0]-theme.title_border_thickness*2, titleDimensions[1]-theme.title_border_thickness*2, theme.secondary_color)
         
@@ -191,7 +191,7 @@ class Toolset():
         return
     
 
-    def rounded_rect(self, x:int, y:int, width:int, height:int, color:int, roundRadius:int):
+    def rounded_rect(self, x:int, y:int, width:int, height:int, roundRadius:int, color:int):
         """ 
         Draws a rounded rectangle on a given position.
         Arguments:
