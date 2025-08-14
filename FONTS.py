@@ -296,10 +296,10 @@ class FONTS():
     @staticmethod
     def calculate_text_dimensions(string:str, fontSize) -> list[int]:
         characterWidth = 6*fontSize - int(fontSize/2)
-        ySize = int(characterWidth+fontSize+1)
-        xSize = int(characterWidth*len(string)-int((fontSize+1)/2))
+        height = int(characterWidth+fontSize+1)
+        width = int(characterWidth*len(string)-int((fontSize+1)/2))
 
-        return [xSize, ySize]
+        return [width, height]
 
 # def cntr_st(LCD:displayType,s,y,size,color): # Centres text on line y
 #     width = 6*size - int(size/2)
