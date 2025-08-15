@@ -7,18 +7,18 @@ from drivers.sdcard_driver import SDCard
 
 
 # Display pins
-BL = 13
-DC = 8
-RST = 12
-MOSI = 11
-SCK = 10
-CS = 9
+BL = const(13)
+DC = const(8)
+RST = const(12)
+MOSI = const(11)
+SCK = const(10)
+CS = const(9)
 
 # SD reader pins
-SD_CS = 22
-SD_MISO = 4
-SD_CLK = 6
-SD_MOSI = 7
+SD_CS = const(5)
+SD_MISO = const(4)
+SD_CLK = const(6)
+SD_MOSI = const(7)
 
 # initialize buttons:
 keyA = Pin(15,Pin.IN,Pin.PULL_UP)
