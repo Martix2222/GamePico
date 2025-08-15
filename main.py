@@ -7,6 +7,7 @@ import drivers.display_driver as display_driver
 # color space to the color space supported by the display.
 
 from games.snek.snek import Snek
+from games.twenty_forty_eight.twenty_forty_eight import TwentyFortyEight
 
 import themes
 
@@ -49,8 +50,16 @@ class Main(Menus):
                 self.LCD.WasPressed.clear_queue()
                 if choice == 0:
                     # Play
-                    snek = Snek(self.LCD, self.theme)
-                    snek.start()
+                    choice = self.horizontal_scrolling_menu("Select a\nGame", ["Snek", "2048", "Return to main Menu"])
+                    if choice == 0:
+                        snek = Snek(self.LCD, self.theme)
+                        snek.start()
+                    elif choice == 1:
+                        twentyFortyEight = TwentyFortyEight(self.LCD)
+                        twentyFortyEight.start()
+                    else:
+                        pass
+
                 elif choice == 1:
                     # Settings
                     choice = 0
