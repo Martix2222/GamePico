@@ -11,6 +11,7 @@ class Theme2048(Default_theme):
         """
         The specific color theme for the 2048 game.
         """
+        super().__init__()
         self.tile_size = 40
         self.spacer_size = 5
         self.round_radius = 5
