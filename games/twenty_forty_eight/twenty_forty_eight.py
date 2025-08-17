@@ -7,13 +7,13 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
+import gc
+
 from menus import Menus
 from themes import Default_theme as themeClass
 from games.twenty_forty_eight.theme import Theme2048
 
 color = displayClass.color
-
-""" ↑↓→← """
 
 
 class TwentyFortyEight(Menus):
@@ -25,6 +25,8 @@ class TwentyFortyEight(Menus):
         self.grid_size = 4 # set the size of the grid, 4 will create a 4*4 grid, 5 would create a 5*5 grid
 
         self.grid = self.init_grid()
+
+        self.score = 0
         
     
     def start(self):
@@ -39,6 +41,7 @@ class TwentyFortyEight(Menus):
         nothing = False
 
         while True:
+            LCD.fill(theme.background_color)
             while nothing:
                 time.sleep_ms(50)
                 if LCD.WasPressed.up(clearQueue=True):
@@ -57,9 +60,9 @@ class TwentyFortyEight(Menus):
 
             self.draw_grid((LCD.width-self.calculate_grid_dimensions()[0])//2,
                        LCD.height-self.calculate_grid_dimensions()[1]-10)
-            
 
-            LCD.show(True)
+
+            LCD.show()
             self.LCD.WasPressed.clear_queue()
 
     
@@ -120,61 +123,45 @@ class TwentyFortyEight(Menus):
             direction (str): The acceptable values are "up", "down", "left" or "right".
         """
         noChange = True
-        # TODO: Optimize and shorten this:
-        if direction == "right":
-            for gridY in range(self.grid_size):
-                skipNext = False
-                for gridX in range(self.grid_size-1):
-                    if skipNext:
-                        skipNext = False
-                        continue
-                    
-                    if self.grid[gridY][gridX] == self.grid[gridY][gridX+1] and self.grid[gridY][gridX] > 0:
-                        self.grid[gridY][gridX+1] += self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        skipNext = True
-                        noChange = False
-        if direction == "left":
-            for gridY in range(self.grid_size):
-                skipNext = False
-                for gridX in range(self.grid_size-1, 0, -1):
-                    if skipNext:
-                        skipNext = False
-                        continue
-                    
-                    if self.grid[gridY][gridX] == self.grid[gridY][gridX-1] and self.grid[gridY][gridX] > 0:
-                        self.grid[gridY][gridX-1] += self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        skipNext = True
-                        noChange = False
-        if direction == "up":
-            for gridX in range(self.grid_size):
-                skipNext = False
-                for gridY in range(1, self.grid_size):
-                    if skipNext:
-                        skipNext = False
-                        continue
-                    
-                    if self.grid[gridY][gridX] == self.grid[gridY-1][gridX] and self.grid[gridY][gridX] > 0:
-                        self.grid[gridY-1][gridX] += self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        skipNext = True
-                        noChange = False
-        if direction == "down":
-            for gridX in range(self.grid_size):
-                skipNext = False
-                for gridY in range(self.grid_size-2, -1, -1):
-                    if skipNext:
-                        skipNext = False
-                        continue
 
-                    if self.grid[gridY][gridX] == self.grid[gridY+1][gridX] and self.grid[gridY][gridX] > 0:
-                        self.grid[gridY+1][gridX] += self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        skipNext = True
-                        noChange = False
+        if direction == "right":
+            start, stop, step = self.grid_size-1, 0, -1
+            vertical = False
+            xLookahead, yLookahead = -1, 0
+        elif direction == "left":
+            start, stop, step = 0, self.grid_size-1, 1
+            vertical = False
+            xLookahead, yLookahead = 1, 0
+        elif direction == "up":
+            start, stop, step = 1, self.grid_size, 1
+            vertical = True
+            xLookahead, yLookahead = 0, -1
+        elif direction == "down":
+            start, stop, step = self.grid_size-2, -1, -1
+            vertical = True
+            xLookahead, yLookahead = 0, 1
         else: ValueError("direction (str): The acceptable values are \"up\", \"down\", \"left\" or \"right\".")
 
+        
+        for A in range(self.grid_size):
+                skipNext = False
+                for B in range(start, stop, step):
+                    if skipNext:
+                        skipNext = False
+                        continue
+
+                    # If vertical is false, then the grid will be evaluated line by line, else it will be evaluated column by column    
+                    if not vertical:
+                        gridY, gridX = A, B
+                    else:
+                        gridY, gridX = B, A
+                    
+                    if self.grid[gridY][gridX] == self.grid[gridY+yLookahead][gridX+xLookahead] and self.grid[gridY][gridX] > 0:
+                        self.grid[gridY+yLookahead][gridX+xLookahead] += self.grid[gridY][gridX]
+                        self.grid[gridY][gridX] = 0
+                        skipNext = True
+                        noChange = False
+        
         return noChange
 
 
@@ -185,52 +172,44 @@ class TwentyFortyEight(Menus):
             direction (str): The acceptable values are "up", "down", "left" or "right".
         """
         noChange = True
-        # TODO: Optimize and shorten this:
+
         if direction == "right":
-            for gridY in range(self.grid_size):
-                freeTilesPassed = 0
-                for gridX in range(self.grid_size-1, -1, -1):
-                    if self.grid[gridY][gridX] > 0 and freeTilesPassed > 0:
-                        self.grid[gridY][gridX+freeTilesPassed] = self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        noChange = False
-                    elif self.grid[gridY][gridX] == 0:
-                        freeTilesPassed += 1
+            start, stop, step = self.grid_size-1, -1, -1
+            vertical = False
+            xMultiplier, yMultiplier = 1, 0
         elif direction == "left":
-            for gridY in range(self.grid_size):
-                freeTilesPassed = 0
-                for gridX in range(self.grid_size):
-                    if self.grid[gridY][gridX] > 0 and freeTilesPassed > 0:
-                        self.grid[gridY][gridX-freeTilesPassed] = self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        noChange = False
-                    elif self.grid[gridY][gridX] == 0:
-                        freeTilesPassed += 1
+            start, stop, step = 0, self.grid_size, 1
+            vertical = False
+            xMultiplier, yMultiplier = -1, 0
         elif direction == "up":
-            for gridX in range(self.grid_size):
-                freeTilesPassed = 0
-                for gridY in range(self.grid_size):
-                    if self.grid[gridY][gridX] > 0 and freeTilesPassed > 0:
-                        self.grid[gridY-freeTilesPassed][gridX] = self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        noChange = False
-                    elif self.grid[gridY][gridX] == 0:
-                        freeTilesPassed += 1
+            start, stop, step = 0, self.grid_size, 1
+            vertical = True
+            xMultiplier, yMultiplier = 0, -1
         elif direction == "down":
-            for gridX in range(self.grid_size):
-                freeTilesPassed = 0
-                for gridY in range(self.grid_size-1, -1, -1):
-                    if self.grid[gridY][gridX] > 0 and freeTilesPassed > 0:
-                        self.grid[gridY+freeTilesPassed][gridX] = self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
-                        noChange = False
-                    elif self.grid[gridY][gridX] == 0:
-                        freeTilesPassed += 1
+            start, stop, step = self.grid_size-1, -1, -1
+            vertical = True
+            xMultiplier, yMultiplier = 0, 1
         else: ValueError("direction (str): The acceptable values are \"up\", \"down\", \"left\" or \"right\".")
+
+        for A in range(self.grid_size):
+            freeTilesPassed = 0
+            for B in range(start, stop, step):
+                # If vertical is false, then the grid will be evaluated line by line, else it will be evaluated column by column    
+                if not vertical:
+                    gridY, gridX = A, B
+                else:
+                    gridY, gridX = B, A
+                
+                if self.grid[gridY][gridX] > 0 and freeTilesPassed > 0:
+                    self.grid[gridY+freeTilesPassed*yMultiplier][gridX+freeTilesPassed*xMultiplier] = self.grid[gridY][gridX]
+                    self.grid[gridY][gridX] = 0
+                    noChange = False
+                elif self.grid[gridY][gridX] == 0:
+                    freeTilesPassed += 1
 
         return noChange
 
-    
+
     def init_grid(self):
         """ Creates a two dimensional list that represents the grid of the game. """
         theme = self.theme
@@ -304,3 +283,8 @@ class TwentyFortyEight(Menus):
             # Default to the smallest font to try to fit the number into the tile
             self.center_text(str(value), x+theme.tile_size//2, y+theme.tile_size//2, textColor, font=1, size=1)
 
+
+
+if __name__ == "__main__":
+    twentyFortyEight = TwentyFortyEight(displayClass())
+    twentyFortyEight.start()
