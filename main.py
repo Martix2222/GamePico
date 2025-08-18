@@ -50,7 +50,7 @@ class Main(Menus):
                 self.LCD.WasPressed.clear_queue()
                 if choice == 0:
                     # Play
-                    choice = self.horizontal_scrolling_menu("Select a\nGame", ["Snek", "2048", "Return to main Menu"])
+                    choice = self.horizontal_scrolling_menu("Select a\nGame", ["Snek", "2048", "Return to\nmain Menu"])
                     if choice == 0:
                         snek = Snek(self.LCD, self.theme)
                         snek.start()

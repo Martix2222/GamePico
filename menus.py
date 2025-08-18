@@ -59,6 +59,7 @@ class Menus(Toolset):
         def reset_buttons():
             buttonA.state, buttonB.state, buttonX.state, buttonY.state = 0,0,0,0
 
+        LCD.WasPressed.clear_queue()
 
         while(True):
             # This sleep is here because when it wasn't, there were
@@ -247,6 +248,7 @@ class Menus(Toolset):
         for i in range(len(buttons)):
             buttons[i].position[1] -= targetScrollOffset
 
+        LCD.WasPressed.clear_queue()
 
         while True:
             # This handles button presses until an option is selected
@@ -368,6 +370,9 @@ class Menus(Toolset):
         brightnessButton = Button(LCD, position[0], position[1], formattedText, 0, 0, theme, ["", " > ", "", " < "], 0 , [True, True])
 
         update = True
+
+        LCD.WasPressed.clear_queue()
+
         while True:
             # left and right joystick presses change the value
             if LCD.WasPressed.left():
@@ -557,6 +562,7 @@ class Menus(Toolset):
         for i in range(len(buttons)):
             buttons[i].position[0] -= targetScrollOffset
 
+        LCD.WasPressed.clear_queue()
 
         while True:
             # This handles button presses until an option is selected
