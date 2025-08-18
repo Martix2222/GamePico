@@ -231,23 +231,30 @@ class Toolset():
         return
 
 
-    def game_over_screen(self, title:str, titleColor:int, titleCenter:list[int], secondaryText:str, secondaryTextColor:int):
+    def game_over_screen(self, title:str, titleColor:int, titleCenter:list[int], secondaryText:str, otherTextColor:int, tertiaryText:str = ""):
         theme = self.theme
         LCD = self.LCD
 
-        for i in range(1, 170 + theme.intro_circle_thickness, int(theme.intro_circle_thickness/2)):
+        step = int(theme.intro_circle_thickness/2)
+        titleDimensions = self.calculate_text_dimensions(title, 0)
+
+        for i in range(1, 170 + theme.intro_circle_thickness, step):
             LCD.ellipse(120, 120, i, i, theme.primary_color, True)
-            if i > 10:
+            if i > theme.intro_circle_thickness:
                 LCD.ellipse(120, 120, i - theme.intro_circle_thickness, i - theme.intro_circle_thickness, theme.background_color, True)
-            if i > 110:
+            if i > (math.sqrt(pow(titleDimensions[0]//2, 2) + pow(titleDimensions[1]//2, 2)) + theme.intro_circle_thickness):
                 self.center_text(title, 115, 120, titleColor)
             LCD.show()
         
+        # Title
         LCD.fill(theme.background_color)
         self.center_text(title, titleCenter[0], titleCenter[1], titleColor)
 
         secondaryTextPos = [titleCenter[0], titleCenter[1]+self.calculate_text_dimensions(title, 0)[1]//2+theme.vertical_reserve]
-        self.center_x_text(secondaryText, secondaryTextPos[0], secondaryTextPos[1], secondaryTextColor, font=1, size=2)
+        self.center_x_text(secondaryText, secondaryTextPos[0], secondaryTextPos[1], otherTextColor, font=1, size=2, align=1)
+
+        tertiaryTextPos = [titleCenter[0], secondaryTextPos[1] + self.calculate_text_dimensions(secondaryText, 1, 2)[1] + theme.vertical_reserve]
+        self.center_x_text(tertiaryText, tertiaryTextPos[0], tertiaryTextPos[1], otherTextColor, align=1)
 
         LCD.show()
         time.sleep(5)
