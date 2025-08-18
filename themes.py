@@ -13,6 +13,7 @@ class Default_theme():
         self.title_text_color = color(255, 255, 255)
         self.title_border_thickness = 5
         self.text_color = color(0, 0, 0)
+        self.secondary_text_color = color(255, 255, 255)
         self.text_line_spacing = 2
         self.vertical_reserve=10
         self.horizontal_reserve=6
@@ -29,14 +30,14 @@ class Default_theme():
         self.button_border_thickness = 4
         self.button_spacing = 10
 
-        self.richGameOverTitle = """
-   ___    _    __  __  ___ 
-  / __|  /_\\  |  \\/  || __|
- | (_ | / _ \\ | |\\/| || _| 
-  \\___|/_/ \\_\\|_|  |_||___|
-   ___ __   __ ___  ___  _ 
-  / _ \\\\ \\ / /| __|| _ \\| |
- | (_) |\\ V / | _| |   /|_|
-  \\___/  \\_/  |___||_|_\\(_)
-                           
-"""
+        self.rich_game_over_title = """  ___    _    __  __  ___ 
+ / __|  /_\\  |  \\/  || __|
+| (_ | / _ \\ | |\\/| || _| 
+ \\___|/_/ \\_\\|_|  |_||___|
+  ___ __   __ ___  ___  _ 
+ / _ \\\\ \\ / /| __|| _ \\| |
+| (_) |\\ V / | _| |   /|_|
+ \\___/  \\_/  |___||_|_\\(_)"""
+        self.game_over_title_color = color(255, 0, 0)
+        self.game_over_secondary_color = color(255, 170, 0)
+      

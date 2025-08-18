@@ -147,30 +147,10 @@ class Snek(Menus):
             self.center_x_text("score: " + str(self.score), 120, 1, 0x0000, -1, 1, 2)
 
             if LCD.width <= self.snake[0][0] or self.snake[0][0] < 0 or LCD.height <= self.snake[0][1] or self.snake[0][1] < 0 or self.snake[0] in self.snake[3:]:
-                self.game_over_screen(theme.richGameOverTitle)
+                self.game_over_screen(theme.rich_game_over_title, theme.game_over_title_color, [120, 90],  "You scored " + str(self.score) + " points!", theme.game_over_secondary_color)
+               
                 return 1
 
             # Update the screen and if recording is enabled duplicate the screenshots such that
             # when the recording is exported the frame timing should be more or less right.
             LCD.show(forceMinimumDuplicates=minUpdateInterval_ms//LCD.frameTime_ms-1)
-
-
-    def game_over_screen(self, title:str, titleColor:int=color(255,0,0), scoreColor:int=color(255,170,0),
-                        introCircleColor:int=color(255,0,0), backgroundColor:int=color(255,255,255), introCircleThickness:int=10):
-        for i in range(1, 170 + introCircleThickness, int(introCircleThickness/2)):
-            self.LCD.ellipse(120, 120, i, i, introCircleColor, True)
-            if i > 10:
-                self.LCD.ellipse(120, 120, i - introCircleThickness, i - introCircleThickness, backgroundColor, True)
-            if i > 110:
-                self.center_text(title, 115, 120, titleColor)
-            self.LCD.show()
-        
-        self.LCD.fill(backgroundColor)
-        # The font looks off center a little, so I put 115 instead of 120 as the x coordinate
-        self.center_text(title, 115, 90, titleColor)
-        self.center_text("You scored " + str(self.score) + " points!", 120, 140, scoreColor, font=1, size=2)
-
-        self.LCD.show()
-        time.sleep(5)
-        self.LCD.show()
-        return
