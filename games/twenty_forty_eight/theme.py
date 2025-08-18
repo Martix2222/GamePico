@@ -37,4 +37,15 @@ class Theme2048(Default_theme):
 
         self.number_font = 0
         self.number_font_size = 1 # only works with certain fonts
+
+        self.animation_speed = 2
+
+        self.rich_you_win_title = """ __   __ ___   _   _    
+ \\ \\ / // _ \\ | | | |   
+  \\ V /| (_) || |_| |   
+   |_|  \\___/  \\___/    
+__      __ ___  _  _  _ 
+\\ \\    / /|_ _|| \\| || |
+ \\ \\/\\/ /  | | | .` ||_|
+  \\_/\\_/  |___||_|\\_|(_)"""
         

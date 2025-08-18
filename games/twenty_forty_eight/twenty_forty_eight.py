@@ -7,8 +7,6 @@ from drivers.display_driver import LCD_1inch3 as displayClass
 # The display driver must contain a color() function to convert 24-bit
 # color space to the color space supported by the display.
 
-import gc
-
 from menus import Menus
 from themes import Default_theme as themeClass
 from games.twenty_forty_eight.theme import Theme2048
@@ -27,6 +25,14 @@ class TwentyFortyEight(Menus):
         self.grid = self.init_grid()
 
         self.score = 0
+
+        self.reached2048 = False
+
+        # TEST CODE
+        # self.grid = [[0,1024,0,1024],
+        #              [0,0,0,0],
+        #              [0,0,0,0],
+        #              [0,0,0,0]]
         
     
     def start(self):
@@ -61,8 +67,27 @@ class TwentyFortyEight(Menus):
             self.draw_grid((LCD.width-self.calculate_grid_dimensions()[0])//2,
                        LCD.height-self.calculate_grid_dimensions()[1]-10)
 
+            self.draw_score()
 
             LCD.show()
+
+            # End the game if there are no more moves that can be made
+            if not self.is_still_playable():
+                time.sleep(1)
+                self.game_over_screen(theme.rich_game_over_title, theme.game_over_title_color, [120, 80], "You scored\n" + str(self.score) + " points!", theme.game_over_secondary_color)
+                break
+                
+            # Show a special screen if the player reaches 2048
+            if not self.reached2048 and self.detect_2048():
+                self.reached2048 = True
+
+                secondaryText ="You reached 2048\nwith the score of\n" + str(self.score) + " points!"
+                tertiaryText = "You can continue playing\nuntil you fill up the grid!"
+
+                self.game_over_screen(theme.rich_you_win_title, theme.game_over_title_color, [120, 60], secondaryText, theme.game_over_secondary_color, tertiaryText)
+                time.sleep(3)
+                nothing = False
+
             self.LCD.WasPressed.clear_queue()
 
     
@@ -72,11 +97,7 @@ class TwentyFortyEight(Menus):
         else:
             value = 2
 
-        emptyTileCount = 0
-        for gridY in range(self.grid_size):
-            for gridX in range(self.grid_size):
-                if self.grid[gridY][gridX] == 0:
-                    emptyTileCount += 1
+        emptyTileCount =  self.empty_tile_count()
         
         if emptyTileCount == 0:
             return False
@@ -96,8 +117,17 @@ class TwentyFortyEight(Menus):
             if foundFreeTile:
                     break
             
-
         return True
+
+
+    def empty_tile_count(self) -> int:
+        emptyTileCount = 0
+        for gridY in range(self.grid_size):
+            for gridX in range(self.grid_size):
+                if self.grid[gridY][gridX] == 0:
+                    emptyTileCount += 1
+        
+        return emptyTileCount
 
 
     def advance_game(self, direction:str):
@@ -113,7 +143,7 @@ class TwentyFortyEight(Menus):
         # If not then noChange is True and the game does not advance until the player makes a move that changes the grid
         if not noChange:
             self.add_new_tile()
-
+    
 
     def add_tiles_together(self, direction:str) -> bool:
         """ 
@@ -157,8 +187,10 @@ class TwentyFortyEight(Menus):
                         gridY, gridX = B, A
                     
                     if self.grid[gridY][gridX] == self.grid[gridY+yLookahead][gridX+xLookahead] and self.grid[gridY][gridX] > 0:
-                        self.grid[gridY+yLookahead][gridX+xLookahead] += self.grid[gridY][gridX]
-                        self.grid[gridY][gridX] = 0
+                        self.grid[gridY+yLookahead][gridX] += self.grid[gridY][gridX+xLookahead]
+                        self.grid[gridY][gridX+xLookahead] = 0
+
+                        self.score += self.grid[gridY+yLookahead][gridX]
                         skipNext = True
                         noChange = False
         
@@ -212,8 +244,6 @@ class TwentyFortyEight(Menus):
 
     def init_grid(self):
         """ Creates a two dimensional list that represents the grid of the game. """
-        theme = self.theme
-
         grid = []
         for y in range(self.grid_size):
             line = []
@@ -247,6 +277,57 @@ class TwentyFortyEight(Menus):
         theme = self.theme
         return [theme.spacer_size+(theme.spacer_size+theme.tile_size)*len(self.grid[0]),
                 theme.spacer_size+(theme.spacer_size+theme.tile_size)*self.grid_size]
+    
+
+    def list_deep_copy(self, object):
+        """ Returns a deep copy of a list. """
+        if isinstance(object, list):
+            return [self.list_deep_copy(item) for item in object]
+
+        return object
+
+
+    def is_still_playable(self) -> bool:
+        if self.empty_tile_count() != 0:
+            return True
+
+        originalGrid = self.list_deep_copy(self.grid)
+        playable = False
+        for direction in ["up", "down", "left", "right"]:
+            # Test whether a move is possible
+            if not self.add_tiles_together(direction):
+                playable = True
+
+                # Return the grid to it's original position, because calling
+                # the self.add_tiles_together function has changed it.
+                self.grid = self.list_deep_copy(originalGrid)
+
+                return playable            
+
+        return playable
+
+
+    def detect_2048(self) -> bool:
+        """ Returns True, if there  is any 2048 value in the grid. """
+        for gridY in range(self.grid_size):
+            if 2048 in self.grid[gridY]:
+                return True
+        return False
+
+
+    def draw_score(self):
+        x = 120
+        y = 8
+
+        theme = self.theme
+
+        text = f"Score = {self.score}"
+        textDimensions = self.calculate_text_dimensions(text, 0)
+        self.rounded_rect(x-textDimensions[0]//2-theme.horizontal_reserve, y-textDimensions[1]-theme.vertical_reserve, 
+                          textDimensions[0]+theme.horizontal_reserve*2, textDimensions[1]+theme.vertical_reserve*2, 
+                          theme.vertical_reserve, theme.secondary_color)
+        
+        self.center_text(text, x, y, theme.secondary_text_color, theme.secondary_color)
 
     
     def draw_tile(self, x, y, value):
