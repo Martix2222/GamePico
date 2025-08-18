@@ -34,6 +34,10 @@ I used this code largely unmodified or with some minor changes or feature additi
 - [FONTS](https://thepihut.com/blogs/raspberry-pi-tutorials/advanced-text-with-micropython-on-raspberry-pi-pico-displays?)
     - Again by Tony Goodhew for [thepihut.com](https://thepihut.com)
 
+## Special thanks
+- [Text to ASCII Art Generator](https://patorjk.com/software/taag/)
+    - A very useful and quite powerful tool for generating ascii text.
+
 ---
 ---
 
