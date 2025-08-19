@@ -13,8 +13,8 @@ class Theme2048(Default_theme):
         """
         super().__init__()
         self.tile_size = 40
-        self.spacer_size = 5
-        self.round_radius = 5
+        self.grid_spacing_size = 5
+        self.round_radius = 10
 
         self.grid_color = color(165, 147, 128)
         self.empty_tile_color = color(189, 176, 160)
@@ -38,7 +38,7 @@ class Theme2048(Default_theme):
         self.number_font = 0
         self.number_font_size = 1 # only works with certain fonts
 
-        self.animation_speed = 2
+        self.animation_denominator = 4
 
         self.rich_you_win_title = """ __   __ ___   _   _    
  \\ \\ / // _ \\ | | | |   

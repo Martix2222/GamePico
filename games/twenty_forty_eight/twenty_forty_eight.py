@@ -23,17 +23,13 @@ class TwentyFortyEight(Menus):
         self.grid_size = 4 # set the size of the grid, 4 will create a 4*4 grid, 5 would create a 5*5 grid
 
         self.grid = self.init_grid()
+        self.current_grid_offsets = self.reset_grid_offsets()
+        self.target_grid_offsets = self.reset_grid_offsets()
 
         self.score = 0
 
         self.reached2048 = False
 
-        # TEST CODE
-        # self.grid = [[0,1024,0,1024],
-        #              [0,0,0,0],
-        #              [0,0,0,0],
-        #              [0,0,0,0]]
-        
     
     def start(self):
         self.game_loop()
@@ -44,32 +40,25 @@ class TwentyFortyEight(Menus):
         theme = self.theme
 
         self.add_new_tile()
-        nothing = False
+        noInput = False
 
         while True:
-            LCD.fill(theme.background_color)
-            while nothing:
+            noInput = True
+            while noInput:
                 time.sleep_ms(50)
                 if LCD.WasPressed.up(clearQueue=True):
                     self.advance_game("up")
-                    nothing = False
+                    noInput = False
                 if LCD.WasPressed.left(clearQueue=True):
                     self.advance_game("left")
-                    nothing = False
+                    noInput = False
                 if LCD.WasPressed.down(clearQueue=True):
                     self.advance_game("down")
-                    nothing = False
+                    noInput = False
                 if LCD.WasPressed.right(clearQueue=True):
                     self.advance_game("right")
-                    nothing = False
-            nothing = True
-
-            self.draw_grid((LCD.width-self.calculate_grid_dimensions()[0])//2,
-                       LCD.height-self.calculate_grid_dimensions()[1]-10)
-
-            self.draw_score()
-
-            LCD.show()
+                    noInput = False
+                self.show_frame()
 
             # End the game if there are no more moves that can be made
             if not self.is_still_playable():
@@ -86,9 +75,22 @@ class TwentyFortyEight(Menus):
 
                 self.game_over_screen(theme.rich_you_win_title, theme.game_over_title_color, [120, 60], secondaryText, theme.game_over_secondary_color, tertiaryText)
                 time.sleep(3)
-                nothing = False
+                noInput = False
 
             self.LCD.WasPressed.clear_queue()
+    
+
+    def show_frame(self):
+        LCD = self.LCD
+        theme = self.theme
+        
+        LCD.fill(theme.background_color)
+
+        self.draw_grid((LCD.width-self.calculate_grid_dimensions()[0])//2,
+        LCD.height-self.calculate_grid_dimensions()[1]-10)
+
+        self.draw_score()
+        LCD.show()
 
     
     def add_new_tile(self) -> bool:
@@ -136,6 +138,7 @@ class TwentyFortyEight(Menus):
         Arguments:
             direction (str): The acceptable values are "up", "down", "left" or "right".
         """
+        self.animate_advancement(direction)
         noChange = self.move_tiles(direction)
         noChange = min(noChange, self.add_tiles_together(direction))
         noChange = min(noChange, self.move_tiles(direction))
@@ -143,7 +146,93 @@ class TwentyFortyEight(Menus):
         # If not then noChange is True and the game does not advance until the player makes a move that changes the grid
         if not noChange:
             self.add_new_tile()
-    
+
+
+    def animate_advancement(self, direction:str):
+        theme = self.theme
+        
+        self.calculate_target_offsets(direction)
+
+        if direction == "up" or direction == "down":
+            vertical = True
+        else:
+            vertical = False
+
+        # Perform the animation
+        while self.target_grid_offsets != self.current_grid_offsets:
+            for gridY in range(self.grid_size):
+                for gridX in range(self.grid_size):
+                    if self.current_grid_offsets[gridY][gridX][int(vertical)] == self.target_grid_offsets[gridY][gridX][int(vertical)]:
+                        continue
+                    elif abs(self.current_grid_offsets[gridY][gridX][int(vertical)] - self.target_grid_offsets[gridY][gridX][int(vertical)]) < theme.animation_denominator:
+                        change = 1
+                    else:
+                        change = abs(self.current_grid_offsets[gridY][gridX][int(vertical)] - self.target_grid_offsets[gridY][gridX][int(vertical)])//theme.animation_denominator + 1
+                     
+                    if direction == "up" or direction == "left":
+                        self.current_grid_offsets[gridY][gridX][int(vertical)] -= change
+                    else:
+                        self.current_grid_offsets[gridY][gridX][int(vertical)] += change
+            
+            self.show_frame()
+
+        self.current_grid_offsets = self.reset_grid_offsets()
+        self.target_grid_offsets = self.reset_grid_offsets()
+
+
+    def calculate_target_offsets(self, direction:str):
+        """ Calculates target offsets that should be achieved during the animation. """
+        theme = self.theme
+
+        if direction == "right":
+            start, stop, step = self.grid_size-1, -1, -1
+            vertical = False
+            xLookahead, yLookahead = -1, 0
+        elif direction == "left":
+            start, stop, step = 0, self.grid_size, 1
+            vertical = False
+            xLookahead, yLookahead = 1, 0
+        elif direction == "up":
+            start, stop, step = 0, self.grid_size, 1
+            vertical = True
+            xLookahead, yLookahead = 0, -1
+        elif direction == "down":
+            start, stop, step = self.grid_size-1, -1, -1
+            vertical = True
+            xLookahead, yLookahead = 0, 1
+        else: ValueError("direction (str): The acceptable values are \"up\", \"down\", \"left\" or \"right\".")
+
+        
+        for A in range(self.grid_size):
+            currentOffset = 0
+            lastNumber = 0
+            for B in range(start, stop, step):
+                # If vertical is false, then the grid will be evaluated line by line, else it will be evaluated column by column    
+                if not vertical:
+                    gridY, gridX = A, B
+                else:
+                    gridY, gridX = B, A
+                
+                change = 0
+                
+                if self.grid[gridY][gridX] == 0:
+                    change += theme.grid_spacing_size + theme.tile_size
+                elif self.grid[gridY][gridX] == lastNumber:
+                    change += theme.grid_spacing_size + theme.tile_size
+                
+
+                if direction == "up" or direction == "left":
+                    currentOffset -= change
+                else:
+                    currentOffset += change
+
+                if self.grid[gridY][gridX] != 0:
+                    if lastNumber != self.grid[gridY][gridX]:
+                        lastNumber = self.grid[gridY][gridX]
+                    else:
+                        lastNumber = 0
+                    self.target_grid_offsets[gridY][gridX][int(vertical)] = currentOffset
+
 
     def add_tiles_together(self, direction:str) -> bool:
         """ 
@@ -252,20 +341,40 @@ class TwentyFortyEight(Menus):
             grid.append(line)
 
         return grid
+    
+
+    def reset_grid_offsets(self):
+        """ Creates a two dimensional list that on each coordinate represents the x and y offset of each tile from the grid."""
+        grid_offsets = []
+        for y in range(self.grid_size):
+            line = []
+            for x in range(self.grid_size):
+                line.append([0, 0])
+            grid_offsets.append(line)
+
+        return grid_offsets
 
     
     def draw_grid(self, x, y):
         theme = self.theme
 
-        self.rounded_rect(x, y, theme.spacer_size+(theme.spacer_size+theme.tile_size)*len(self.grid[0]),
-                          theme.spacer_size+(theme.spacer_size+theme.tile_size)*self.grid_size,
+        self.rounded_rect(x, y, theme.grid_spacing_size+(theme.grid_spacing_size+theme.tile_size)*len(self.grid[0]),
+                          theme.grid_spacing_size+(theme.grid_spacing_size+theme.tile_size)*self.grid_size,
                           theme.round_radius, theme.grid_color)
+        
+        # Draw an empty grid as background
+        for gridY in range(self.grid_size):
+            for gridX in range(self.grid_size):
+                self.draw_tile(x+theme.grid_spacing_size+(theme.tile_size+theme.grid_spacing_size)*gridX, 
+                               y+theme.grid_spacing_size+(theme.tile_size+theme.grid_spacing_size)*gridY,
+                               0)
 
         for gridY in range(self.grid_size):
             for gridX in range(self.grid_size):
-                self.draw_tile(x+theme.spacer_size+(theme.tile_size+theme.spacer_size)*gridX, 
-                               y+theme.spacer_size+(theme.tile_size+theme.spacer_size)*gridY,
-                               self.grid[gridY][gridX])
+                if self.grid[gridY][gridX] != 0:
+                    self.draw_tile(x+theme.grid_spacing_size+(theme.tile_size+theme.grid_spacing_size)*gridX+self.current_grid_offsets[gridY][gridX][0], 
+                                   y+theme.grid_spacing_size+(theme.tile_size+theme.grid_spacing_size)*gridY+self.current_grid_offsets[gridY][gridX][1],
+                                   self.grid[gridY][gridX])
                 
     
     def calculate_grid_dimensions(self) -> list[int]:
@@ -275,8 +384,8 @@ class TwentyFortyEight(Menus):
             list[int]: The list of the dimensions in the form of [width, height]
         """
         theme = self.theme
-        return [theme.spacer_size+(theme.spacer_size+theme.tile_size)*len(self.grid[0]),
-                theme.spacer_size+(theme.spacer_size+theme.tile_size)*self.grid_size]
+        return [theme.grid_spacing_size+(theme.grid_spacing_size+theme.tile_size)*len(self.grid[0]),
+                theme.grid_spacing_size+(theme.grid_spacing_size+theme.tile_size)*self.grid_size]
     
 
     def list_deep_copy(self, object):
