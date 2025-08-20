@@ -145,11 +145,12 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.rst = Pin(RST,Pin.OUT)
         
         self.cs(1)
-        # self.spi = SPI(1)
-        # self.spi = SPI(1,1000_000)
-        self.spi = SPI(1,125_000_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
+        self.spi = SPI(1)
+        self.spi = SPI(1,1000_000)
+        self.spi = SPI(1,62_500_000,polarity=0, phase=0,sck=Pin(SCK),mosi=Pin(MOSI),miso=None)
         self.dc = Pin(DC,Pin.OUT)
         self.dc(1)
+
         gc.collect()
         self.buffer = bytearray(self.height * self.width * 2)
         super().__init__(self.buffer, self.width, self.height, framebuf.RGB565)
@@ -164,7 +165,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         # This value should be set as the frame time when exporting the recording as a GIF.
         self.frameTime_ms = 50
 
-        self.SDcs = Pin(SD_CS)
+        self.SDcs = Pin(SD_CS, Pin.OUT)
         self.SDcs(1)
 
         self.sdMountPoint = "/sd"
@@ -172,9 +173,13 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.currentRecordingFolder = "/0"
         self.stillRecording = False
 
+    def init_SD(self):
+        """ Returns an initialized SDCard object. """
+        return SDCard(SPI(0, 1_000_000, sck=Pin(SD_CLK), mosi=Pin(SD_MOSI), miso=Pin(SD_MISO)), self.SDcs, 25_000_000)
+
     def init_save_location(self):
         try:
-            SD = SDCard(SPI(0, 125_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
+            SD = self.init_SD()
             os.mount(SD, self.sdMountPoint)
             SDavailable = True
         except OSError:
@@ -343,7 +348,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         gc.collect()
 
         try:
-            SD = SDCard(SPI(0, 125_000_000, sck=Pin(SD_CLK),mosi=Pin(SD_MOSI),miso=Pin(SD_MISO)), self.SDcs, 125_000_000)
+            SD = self.init_SD()
             os.mount(SD, self.sdMountPoint)
             SDavailable = True
         except OSError:

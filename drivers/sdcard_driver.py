@@ -34,7 +34,7 @@ THE SOFTWARE.
 """
 
 from micropython import const
-from machine import SPI
+from machine import SPI, Pin
 import time
 
 
@@ -53,7 +53,7 @@ _TOKEN_DATA = const(0xFE)
 
 
 class SDCard:
-    def __init__(self, spi:SPI, cs, baudrate=1320000):
+    def __init__(self, spi:SPI, cs:Pin, baudrate=1320000):
         self.spi = spi
         self.cs = cs
 
@@ -70,25 +70,20 @@ class SDCard:
     def deinit(self):
         """ Disconnects the SPI interface and thus the SD card. """
         self.spi.deinit()
+        self.cs(1)
+
 
     def init_spi(self, baudrate):
-        """ Only necessary for ESP8266 and pyboard """
-        pass
-        # try:
-        #     master = self.spi.MASTER
-        # except AttributeError:
-        #     # on ESP8266
-        #     self.spi.init(baudrate=baudrate, phase=0, polarity=0)
-        # else:
-        #     # on pyboard
-        #     self.spi.init(master, baudrate=baudrate, phase=0, polarity=0)
+        """ Changes the baudrate of the SPI bus. """
+        self.spi.init(baudrate=baudrate)
+        print(self.spi)
 
     def init_card(self, baudrate):
         # init CS pin
         self.cs.init(self.cs.OUT, value=1)
 
         # init SPI bus; use low data rate for initialisation
-        self.init_spi(100000)
+        self.init_spi(100_000)
 
         # clock card at least 100 cycles with cs high
         for i in range(16):

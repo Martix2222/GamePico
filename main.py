@@ -14,7 +14,7 @@ import themes
 from menus import Menus
 
 # Overclock
-freq(250_000_000)
+freq(250_000_000, 250_000_000)
 
 class Main(Menus):
     def __init__(self) -> None:
