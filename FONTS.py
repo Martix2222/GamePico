@@ -2,14 +2,9 @@
 # Standard ASCII 5x8 font
 # https://gist.github.com/tdicola/229b3eeddc12d58fb0bc724a9062aa05
 from drivers.display_driver import LCD_1inch3 as displayClass
+import gc
 
-class FONTS():
-    def __init__(self, LCD:displayClass):
-        self.LCD = LCD
-
-        self.FONT_HEIGHT = 8
-        self.FONT_WIDTH = 5
-        self.FONT = bytes([
+FONT = bytes([
             0x00, 0x00, 0x00, 0x00, 0x00, # <space>
             0x3E, 0x5B, 0x4F, 0x5B, 0x3E,
             0x3E, 0x6B, 0x4F, 0x6B, 0x3E,
@@ -267,6 +262,16 @@ class FONTS():
             0x00, 0x3C, 0x3C, 0x3C, 0x3C,
             0x00, 0x00, 0x00, 0x00, 0x00  # 255 also a <space>
         ])
+
+
+class FONTS():
+    def __init__(self, LCD:displayClass):
+        self.LCD = LCD
+
+        self.FONT_HEIGHT = 8
+        self.FONT_WIDTH = 5
+        gc.collect()
+        self.FONT = FONT
 
     def character(self, asc,xt,yt,size,color):  # Single character size is size: 1 or 2
         code = asc * 5    # 5 bytes per character

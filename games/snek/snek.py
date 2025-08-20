@@ -110,9 +110,9 @@ class Snek(Menus):
         lastUpdate = time.time_ns()
 
         while(True):
-            # Limit the update rate (and thus set the difficulty [TODO]):
-            time.sleep_ms(max(int(minUpdateInterval_ms - ((time.time_ns()-lastUpdate))/1000000), 1))
-            lastUpdate = time.time_ns()
+            # # Limit the update rate (and thus set the difficulty [TODO]):
+            # time.sleep_ms(max(int(minUpdateInterval_ms - ((time.time_ns()-lastUpdate))/1000000), 1))
+            # lastUpdate = time.time_ns()
 
             LCD.fill(theme.background_color)
 
@@ -151,6 +151,5 @@ class Snek(Menus):
                
                 return 1
 
-            # Update the screen and if recording is enabled duplicate the screenshots such that
-            # when the recording is exported the frame timing should be more or less right.
-            LCD.show(forceMinimumDuplicates=minUpdateInterval_ms//LCD.frameTime_ms-1)
+
+            LCD.show(minimumFrameTime_ms=minUpdateInterval_ms)

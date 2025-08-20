@@ -165,6 +165,8 @@ class LCD_1inch3(framebuf.FrameBuffer):
         # This value should be set as the frame time when exporting the recording as a GIF.
         self.frameTime_ms = 50
 
+        self.lastFrameTime = -1
+
         self.SDcs = Pin(SD_CS, Pin.OUT)
         self.SDcs(1)
 
@@ -302,11 +304,16 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.write_cmd(0x29)
 
-    def show(self, capture:bool = False, forceMinimumDuplicates=0):
+    def show(self, capture:bool = False, minimumFrameTime_ms:int = -1):
         """ 
         Arguments:
             record (bool): Set to true if you want to capture the current frame into a file on the SD card if it is available.
         """
+        if minimumFrameTime_ms == -1:
+            minimumFrameTime_ms = self.frameTime_ms
+        if self.lastFrameTime == -1:
+            self.lastFrameTime = time.ticks_ms()
+
         self.write_cmd(0x2A)
         self.write_data(0x00)
         self.write_data(0x00)
@@ -328,7 +335,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.cs(1)
 
         if (capture or self.enableContinuousRecording) and self.stillRecording:
-            duplicateCount = max(forceMinimumDuplicates, (((time.time_ns() - self.lastCaptureTime)//1000000)//self.frameTime_ms)-1)
+            duplicateCount = max(minimumFrameTime_ms//self.frameTime_ms, (((time.time_ns() - self.lastCaptureTime)//1000000)//self.frameTime_ms)-1)
             self.screenshot("frame.bin", duplicateCount)
             self.lastCaptureTime = time.time_ns()
         elif (capture or self.enableContinuousRecording) and not self.stillRecording:
@@ -338,6 +345,9 @@ class LCD_1inch3(framebuf.FrameBuffer):
             self.lastCaptureTime = time.time_ns()
         else:
             self.stillRecording = False
+
+        time.sleep_ms(minimumFrameTime_ms-time.ticks_diff(time.ticks_ms(), self.lastFrameTime))
+        self.lastFrameTime = time.ticks_ms()
 
     def screenshot(self, fileName, duplicateCount = 0):
         """ 
