@@ -76,7 +76,6 @@ class SDCard:
     def init_spi(self, baudrate):
         """ Changes the baudrate of the SPI bus. """
         self.spi.init(baudrate=baudrate)
-        print(self.spi)
 
     def init_card(self, baudrate):
         # init CS pin
