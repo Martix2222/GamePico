@@ -223,7 +223,7 @@ class Menus(Toolset):
         font = 0
         fontSize = 0
 
-        buttons = []
+        buttons:list[Button] = []
 
         update = True
         
@@ -452,7 +452,7 @@ class Menus(Toolset):
 
         buttonRight = Button(LCD, 140, 120, "Right", 0, 0, theme, ["", "", "",""], 0, [True, True])
 
-        buttons = [buttonA, buttonB, buttonX, buttonY, buttonUp, buttonDown, buttonLeft, buttonRight, buttonSelect]
+        buttons:list[Button] = [buttonA, buttonB, buttonX, buttonY, buttonUp, buttonDown, buttonLeft, buttonRight, buttonSelect]
 
         for button in buttons:
             button.draw()
