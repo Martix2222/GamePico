@@ -159,53 +159,51 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.currentBrightness = 100.0
         self.brightness(self.currentBrightness)
 
-        self.enableContinuousRecording = False
+        self.enableRecording = False
 
-        # This is currently mostly for reference and sets the time between frames when recording.
-        # This value should be set as the frame time when exporting the recording as a GIF.
-        self.frameTime_ms = 50
+        self.globalFrameRateLimit = 40
+        self.lastFrameDuration = 1000 // self.globalFrameRateLimit
 
-        self.lastFrameTime = -1
+        self.lastFrameTime = time.ticks_ms()
 
         self.SDcs = Pin(SD_CS, Pin.OUT)
-        self.SDcs(1)
 
         self.sdMountPoint = "/sd"
-        self.mainScreenshotFolder = "/screenshots"
-        self.currentRecordingFolder = "/0"
+        self.screenshotFolder = "/screenshots"
+        self.recordingFolder = "/recordings"
         self.stillRecording = False
+
+        self.SDavailable = self.check_SD_availability()
+
 
     def init_SD(self):
         """ Returns an initialized SDCard object. """
-        return SDCard(SPI(0, 1_000_000, sck=Pin(SD_CLK), mosi=Pin(SD_MOSI), miso=Pin(SD_MISO)), self.SDcs, 25_000_000)
-
-    def init_save_location(self):
-        try:
-            SD = self.init_SD()
-            os.mount(SD, self.sdMountPoint)
-            SDavailable = True
-        except OSError:
-            SDavailable = False
+        return SDCard(SPI(0, 1_000_000, sck=Pin(SD_CLK), mosi=Pin(SD_MOSI), miso=Pin(SD_MISO)), self.SDcs, 12_500_000)
 
 
-        if SDavailable:
-            if not self.mainScreenshotFolder[1:] in os.listdir(self.sdMountPoint):
-                os.mkdir(self.sdMountPoint + self.mainScreenshotFolder)
-            
-            self.currentRecordingFolder = "/" + str(len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder)))
-            os.mkdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder)
-
+    def mount_SD(self, mount:bool):
+        """ 
+        Arguments:
+            mount (bool): If set to True, the SD card is mounted at the sdMountPoint location, else, the SD card is unmounted.
+        """
+        if mount:
+            self.SDcs(0)
+            self.SD = self.init_SD()
+            os.mount(self.SD, self.sdMountPoint)
         else:
-            if not self.mainScreenshotFolder[1:] in os.listdir("/"):
-                os.mkdir(self.mainScreenshotFolder)
-            
-            self.currentRecordingFolder = "/" + str(len(os.listdir(self.mainScreenshotFolder)))
-            os.mkdir(self.mainScreenshotFolder + self.currentRecordingFolder)
-
-        if SDavailable:
             os.umount(self.sdMountPoint)
-            SD.deinit()
+            self.SD.deinit()
             self.SDcs(1)
+
+
+    def check_SD_availability(self):
+        try:
+            # Check whether an SD card is available by temporarily mounting it.
+            self.mount_SD(True)
+            self.mount_SD(False)
+            return True
+        except OSError:
+            return False
 
 
     def write_cmd(self, cmd):
@@ -304,13 +302,13 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.write_cmd(0x29)
 
-    def show(self, capture:bool = False, minimumFrameTime_ms:int = -1):
+    def show(self, screenshot:bool = False, minimumFrameTime_ms:int = -1):
         """ 
         Arguments:
-            record (bool): Set to true if you want to capture the current frame into a file on the SD card if it is available.
+            screenshot (bool): Set to true if you want to save the current frame as a screenshot into a file on the SD card if it is available.
         """
         if minimumFrameTime_ms == -1:
-            minimumFrameTime_ms = self.frameTime_ms
+            minimumFrameTime_ms = 1000 // self.globalFrameRateLimit
         if self.lastFrameTime == -1:
             self.lastFrameTime = time.ticks_ms()
 
@@ -334,61 +332,122 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.spi.write(self.buffer)
         self.cs(1)
 
-        if (capture or self.enableContinuousRecording) and self.stillRecording:
-            duplicateCount = max(minimumFrameTime_ms//self.frameTime_ms, (((time.time_ns() - self.lastCaptureTime)//1000000)//self.frameTime_ms)-1)
-            self.screenshot("frame.bin", duplicateCount)
-            self.lastCaptureTime = time.time_ns()
-        elif (capture or self.enableContinuousRecording) and not self.stillRecording:
-            self.init_save_location()
-            self.screenshot("frame.bin")
-            self.stillRecording = True
-            self.lastCaptureTime = time.time_ns()
-        else:
-            self.stillRecording = False
+        if screenshot:
+            self.screenshot("screenshot")
+        if self.enableRecording:
+            self.record("recording", max(self.lastFrameDuration, time.ticks_diff(time.ticks_ms(), self.lastFrameTime)))
+        elif self.stillRecording:
+            self.record("recording", max(self.lastFrameDuration, time.ticks_diff(time.ticks_ms(), self.lastFrameTime)))
+        self.lastFrameDuration = minimumFrameTime_ms
 
         time.sleep_ms(minimumFrameTime_ms-time.ticks_diff(time.ticks_ms(), self.lastFrameTime))
         self.lastFrameTime = time.ticks_ms()
 
-    def screenshot(self, fileName, duplicateCount = 0):
+
+    def create_binFrame_header(self, width:int, height:int, id:int, frameTime:int, dataCompression:bool):
+        # The currently implemented binFrame version is V1
+        version:int = 1
+
+        header = bytearray(32)
+        header[0:2] = version.to_bytes(2, "big")
+        header[2:10] = width.to_bytes(4, "big") + height.to_bytes(4, "big")
+        header[10:14] = id.to_bytes(4, "big")
+        header[14:18] = frameTime.to_bytes(4, "big")
+        header[18] = header[18] | (dataCompression << 0) # Set the data compression flag
+        return header
+    
+
+    def write_frame_time_to_file(self,  path:str , frameTime:int):
+        with open(path, "r+b") as f:
+            f.seek(14)
+            f.write(frameTime.to_bytes(4, "big"))
+    
+
+    def screenshot(self, fileName:str):
         """ 
-        Save the current display buffer to a .bin file.
+        Save the current display buffer to a .binFrame file.
         Arguments:
-            filename (str): The name of the file to save the screenshot to.
+            filename (str): The name of the file of the screenshot.
         """
+        fileFormat = ".binFrame"
         gc.collect()
 
-        try:
-            SD = self.init_SD()
-            os.mount(SD, self.sdMountPoint)
-            SDavailable = True
-        except OSError:
-            SDavailable = False
-
-        if SDavailable:        
-            prefix = len(os.listdir(self.sdMountPoint + self.mainScreenshotFolder + self.currentRecordingFolder))
+        if self.SDavailable:
+            self.mount_SD(True)      
+            targetFolder = self.sdMountPoint + self.screenshotFolder
         else:
-            prefix = len(os.listdir(self.mainScreenshotFolder + self.currentRecordingFolder))
+            targetFolder = self.screenshotFolder
 
-        lastUpdatedFramePath = self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(str(prefix))) + str(prefix) + fileName
+        self.init_file_destination(targetFolder)
+   
+        prefix = len(os.listdir(targetFolder))
 
-        print(f"Saving: {lastUpdatedFramePath}")
-        with open(lastUpdatedFramePath, 'xb') as f:
+        screenshotPath = targetFolder + "/" + "0"*(4-len(str(prefix))) + str(prefix) + fileName + fileFormat
+
+        with open(screenshotPath, 'xb') as f:
+            f.write(self.create_binFrame_header(self.width, self.height, prefix, 0, False))
             f.write(self.buffer)
             f.close()
 
-        for i in range(duplicateCount):
-            prefix += 1
-            copyFilePath = self.sdMountPoint*SDavailable + self.mainScreenshotFolder + self.currentRecordingFolder + "/" + "0"*(4-len(str(prefix))) + str(prefix) + fileName
-            print(f"Copy: {copyFilePath}")
-            with open(copyFilePath, 'xb') as f:
-                f.write(self.buffer)
-                f.close()
+        if self.SDavailable:
+            self.mount_SD(False)
 
+
+    def init_file_destination(self, path:str):
+        directories:list[str] = path.split("/")
+        if directories[0] == "":
+            directories.pop(0)
+
+        for depth in range(len(directories)):
+            try:
+                if not directories[depth] in os.listdir("/" +  "/".join(directories[:depth])):
+                    os.mkdir("/" +  "/".join(directories[:depth+1]))
+            except OSError:
+                pass
+
+
+    def record(self, folderName:str, lastFrameDuration:int):
+        """ 
+        Save the current display buffer to a .binFrame file.
+        Arguments:
+            filename (str): The name of the file of the screenshot.
+            lastFrameDuration (int): The duration in ms of how long was the previous frame displayed for.
+        """
+        fileFormat = ".binFrame"
+        gc.collect()
+
+        if self.SDavailable:
+            self.mount_SD(True)      
+            targetFolder = self.sdMountPoint + self.recordingFolder
+        else:
+            targetFolder = self.recordingFolder
         
-        if SDavailable:
-            os.umount(self.sdMountPoint)
-            SD.deinit()
-            self.SDcs(1)
+        self.init_file_destination(targetFolder)
+
+        if not self.stillRecording:
+            self.currentRecordingFolder = "/" + folderName + "-" + "0"*(4-len(str(len(os.listdir(targetFolder))))) + str(len(os.listdir(targetFolder)))
+            os.mkdir(targetFolder + self.currentRecordingFolder)
+            self.currentFrameID = 0
+            self.stillRecording = True
+        else:
+            lastFramePath = targetFolder + self.currentRecordingFolder + "/" + "0"*(4-len(str(self.currentFrameID-1))) + str(self.currentFrameID-1) + fileFormat
+            self.write_frame_time_to_file(lastFramePath, lastFrameDuration)
+            if not self.enableRecording:
+                self.stillRecording = False
+                return
+        
+        framePath = targetFolder + self.currentRecordingFolder + "/" + "0"*(4-len(str(self.currentFrameID))) + str(self.currentFrameID) + fileFormat
+        print(f"Saving: {framePath}")
+
+        with open(framePath, 'xb') as f:
+            f.write(self.create_binFrame_header(self.width, self.height, self.currentFrameID, 0, False))
+            f.write(self.buffer)
+            f.close()
+
+        if self.SDavailable:
+            self.mount_SD(False)
+
+        self.currentFrameID += 1
 
     
     def blit_image_file(self, filePath:str, x:int, y:int, width:int, height:int, memLimit:int = 1000):
