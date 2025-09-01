@@ -4,6 +4,7 @@ import time
 import os
 import gc
 from drivers.sdcard_driver import SDCard
+import deflate
 
 
 # Display pins
@@ -143,6 +144,8 @@ class LCD_1inch3(framebuf.FrameBuffer):
         
         self.cs = Pin(CS,Pin.OUT)
         self.rst = Pin(RST,Pin.OUT)
+
+        self.SDcs = Pin(SD_CS, Pin.OUT)
         
         self.cs(1)
         self.spi = SPI(1)
@@ -160,13 +163,14 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.brightness(self.currentBrightness)
 
         self.enableRecording = False
+        
+        self.enableRecordingCompression = True
+        self.compressionWbits = 5
 
-        self.globalFrameRateLimit = 40
+        self.globalFrameRateLimit = 20
         self.lastFrameDuration = 1000 // self.globalFrameRateLimit
 
-        self.lastFrameTime = time.ticks_ms()
-
-        self.SDcs = Pin(SD_CS, Pin.OUT)
+        self.lastFrameTime = time.ticks_us()
 
         self.sdMountPoint = "/sd"
         self.screenshotFolder = "/screenshots"
@@ -310,7 +314,9 @@ class LCD_1inch3(framebuf.FrameBuffer):
         if minimumFrameTime_ms == -1:
             minimumFrameTime_ms = 1000 // self.globalFrameRateLimit
         if self.lastFrameTime == -1:
-            self.lastFrameTime = time.ticks_ms()
+            self.lastFrameTime = time.ticks_us()
+
+        startTime = time.ticks_us()
 
         self.write_cmd(0x2A)
         self.write_data(0x00)
@@ -340,11 +346,11 @@ class LCD_1inch3(framebuf.FrameBuffer):
             self.record("recording", max(self.lastFrameDuration, time.ticks_diff(time.ticks_ms(), self.lastFrameTime)))
         self.lastFrameDuration = minimumFrameTime_ms
 
-        time.sleep_ms(minimumFrameTime_ms-time.ticks_diff(time.ticks_ms(), self.lastFrameTime))
-        self.lastFrameTime = time.ticks_ms()
+        time.sleep_us(max(0, minimumFrameTime_ms*1000-time.ticks_diff(time.ticks_us(), self.lastFrameTime)))
+        self.lastFrameTime = time.ticks_us()
 
 
-    def create_binFrame_header(self, width:int, height:int, id:int, frameTime:int, dataCompression:bool):
+    def create_binFrame_header(self, width:int, height:int, id:int, frameTime:int, gzip:bool, gzipWbits:int=0):
         # The currently implemented binFrame version is V1
         version:int = 1
 
@@ -353,7 +359,11 @@ class LCD_1inch3(framebuf.FrameBuffer):
         header[2:10] = width.to_bytes(4, "big") + height.to_bytes(4, "big")
         header[10:14] = id.to_bytes(4, "big")
         header[14:18] = frameTime.to_bytes(4, "big")
-        header[18] = header[18] | (dataCompression << 0) # Set the data compression flag
+        header[18] = header[18] | (gzip << 0) # Set the data compression flag
+        if gzip and gzipWbits:
+            header[19] = gzipWbits
+        elif gzip:
+            raise ValueError("The gzipWbits argument must be set if gzip is True")
         return header
     
 
@@ -382,11 +392,33 @@ class LCD_1inch3(framebuf.FrameBuffer):
    
         prefix = len(os.listdir(targetFolder))
 
-        screenshotPath = targetFolder + "/" + "0"*(4-len(str(prefix))) + str(prefix) + fileName + fileFormat
+        screenshotName = "0"*(4-len(str(prefix))) + str(prefix) + fileName + fileFormat
+        
+        # make sure that a screenshot with the same name does not already exist
+        while screenshotName in os.listdir(targetFolder):
+            prefix += 1
+            screenshotName = "0"*(4-len(str(prefix))) + str(prefix) + fileName + fileFormat
+        
+        screenshotPath = targetFolder + "/" + screenshotName
+        print(f"Saving: {screenshotPath}")
 
         with open(screenshotPath, 'xb') as f:
-            f.write(self.create_binFrame_header(self.width, self.height, prefix, 0, False))
-            f.write(self.buffer)
+            if self.enableRecordingCompression:
+                f.write(self.create_binFrame_header(self.width, self.height, prefix, 0, True, self.compressionWbits))
+                d = deflate.DeflateIO(f, deflate.GZIP, self.compressionWbits)
+                try:
+                    d.write(self.buffer) # type: ignore
+                except:
+                    self.enableRecordingCompression = False
+                    f.seek(0)
+                    f.write(self.create_binFrame_header(self.width, self.height, prefix, 0, False))
+                    f.write(self.buffer)
+                finally:
+                    d.close()
+            else:
+                f.seek(0)
+                f.write(self.create_binFrame_header(self.width, self.height, prefix, 0, False))
+                f.write(self.buffer)
             f.close()
 
         if self.SDavailable:
@@ -410,7 +442,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         """ 
         Save the current display buffer to a .binFrame file.
         Arguments:
-            filename (str): The name of the file of the screenshot.
+            folderName (str): The name of the folder that the frames of the recording will be saved to.
             lastFrameDuration (int): The duration in ms of how long was the previous frame displayed for.
         """
         fileFormat = ".binFrame"
@@ -425,7 +457,14 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.init_file_destination(targetFolder)
 
         if not self.stillRecording:
-            self.currentRecordingFolder = "/" + folderName + "-" + "0"*(4-len(str(len(os.listdir(targetFolder))))) + str(len(os.listdir(targetFolder)))
+            recordingFolderSuffix = len(os.listdir(targetFolder))
+            self.currentRecordingFolder = "/" + folderName + "-" + "0"*(4-len(str(recordingFolderSuffix))) + str(recordingFolderSuffix)
+
+            # make sure that the folder does not already exist
+            while self.currentRecordingFolder[1:] in os.listdir(targetFolder):
+                recordingFolderSuffix += 1
+                self.currentRecordingFolder = "/" + folderName + "-" + "0"*(4-len(str(recordingFolderSuffix))) + str(recordingFolderSuffix)
+
             os.mkdir(targetFolder + self.currentRecordingFolder)
             self.currentFrameID = 0
             self.stillRecording = True
@@ -440,8 +479,22 @@ class LCD_1inch3(framebuf.FrameBuffer):
         print(f"Saving: {framePath}")
 
         with open(framePath, 'xb') as f:
-            f.write(self.create_binFrame_header(self.width, self.height, self.currentFrameID, 0, False))
-            f.write(self.buffer)
+            if self.enableRecordingCompression:
+                f.write(self.create_binFrame_header(self.width, self.height, self.currentFrameID, 0, True, self.compressionWbits))
+                d = deflate.DeflateIO(f, deflate.GZIP, self.compressionWbits)
+                try:
+                    d.write(self.buffer) # type: ignore
+                except:
+                    self.enableRecordingCompression = False
+                    f.seek(0)
+                    f.write(self.create_binFrame_header(self.width, self.height, self.currentFrameID, 0, False))
+                    f.write(self.buffer)
+                finally:
+                    d.close()
+            else:
+                f.seek(0)
+                f.write(self.create_binFrame_header(self.width, self.height, self.currentFrameID, 0, False))
+                f.write(self.buffer)
             f.close()
 
         if self.SDavailable:

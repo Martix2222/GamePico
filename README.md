@@ -3,9 +3,14 @@ This is a complete overhaul of a project I started in my free time. This means t
 My goal is to make a toolset that allows for creating games and other GUI applications for Raspberry Pi Pico equipped with a display.
 
 # How to run
-1. Install MicroPython on your Pi Pico Board: \[Credit: [raspberrypi.com](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html)\]
-[![MicroPython tutorial](https://raw.githubusercontent.com/Martix2222/GamePico/refs/heads/master/.original%20assets/MicroPython%20tutorial%20thumb.webp)](https://www.raspberrypi.com/documentation/microcontrollers/images/MicroPython.webm)
+1. Install MicroPython on your Pi Pico Board. There are options based on what features of this project you'd like to use:
+    1. If you plan on just playing the games or testing all the features of this project, the normal version of MicroPython is just enough: 
+ \[Credit: [raspberrypi.com](https://www.raspberrypi.com/documentation/microcontrollers/micropython.html)\] [![MicroPython tutorial](https://raw.githubusercontent.com/Martix2222/GamePico/refs/heads/master/.original%20assets/MicroPython%20tutorial%20thumb.webp)](https://www.raspberrypi.com/documentation/microcontrollers/images/MicroPython.webm)
+
+    2. However, if you want to unlock the full potential project, you can also compile the firmware by yourself with the *#define MICROPY_PY_DEFLATE_COMPRESS (1)* flag. This feature is used for faster recording and smaller file sizes when recording and taking screenshots. I will not provide this custom firmware compiled here, because **YOU SHOULD NOT DOWNLOAD ANY RANDOM FIRMWARE BECAUSE OF SAFETY CONCERNS**. You can however Refer to my github where I have added forked the micropython repository and added those flags. This is safer because you can see the changes I have made, review them, and then compile the firmware yourself.
+
 2. Upload all files and folders that do not start with a "." from this repository to the Pico. (Except for the README.md) (This includes all assets!)
+
 3. Run main.py or restart the Pico and let it run automatically.
 
 

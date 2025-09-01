@@ -38,9 +38,9 @@ class Menus(Toolset):
         selection = -1
 
         # Debug variables:
-        startTime = time.time_ns()
-        renderEndTime = time.time_ns()
-        showEndTime = time.time_ns()
+        startTime = time.ticks_us()
+        renderEndTime = time.ticks_us()
+        showEndTime = time.ticks_us()
 
         buttonA = Button(LCD, 240, 30, options[0], 0, 0, theme, ["", "A", "",""], 0, [False, True])
         buttonA.position[0] -= buttonA.width
@@ -62,9 +62,9 @@ class Menus(Toolset):
         LCD.WasPressed.clear_queue()
 
         while(True):
-            # This sleep is here because when it wasn't, there were
-            # issues when connecting the Pico via USB while in the menu
-            time.sleep_ms(5)
+            # # This sleep is here because when it wasn't, there were
+            # # issues when connecting the Pico via USB while in the menu
+            # time.sleep_ms(5)
             
             self.update_animated_background(0, theme.background_color, theme.secondary_background_color)
 
@@ -76,9 +76,10 @@ class Menus(Toolset):
                 # Draw debug stats
                 freeMemoryKB = gc.mem_free()/1000
                 self.center_y_text(f"Free RAM: {freeMemoryKB}{" "*(7-len(str(freeMemoryKB)))}KB", 5, 5, 0x0000, 0xFFFF)
-                self.center_y_text(f"Total time: {round((time.time_ns() - startTime)/1000000, 1)} ms ", 5, 15, 0x0000, 0xFFFF)
-                self.center_y_text(f"Render time: {round((renderEndTime - startTime)/1000000, 1)} ms ", 5, 25, 0x0000, 0xFFFF)
-                self.center_y_text(f"Show time: {round((showEndTime - renderEndTime)/1000000, 1)} ms ", 5, 35, 0x0000, 0xFFFF)
+                self.center_y_text(f"Total time: {round(time.ticks_diff(time.ticks_us(), startTime)/1000, 4)} ms ", 5, 15, 0x0000, 0xFFFF)
+                self.center_y_text(f"Render time: {round(time.ticks_diff(renderEndTime, startTime)/1000, 4)} ms ", 5, 25, 0x0000, 0xFFFF)
+                self.center_y_text(f"Show time: {round(time.ticks_diff(showEndTime, renderEndTime)/1000, 4)} ms ", 5, 35, 0x0000, 0xFFFF)
+                startTime = time.ticks_us()
             else:
                 # Show logo if specified
                 if not logoPath == "":
@@ -86,9 +87,6 @@ class Menus(Toolset):
                         LCD.blit_image_file(logoPath, logoPos[0], logoPos[1], logoDim[0], logoDim[1])
                     except:
                         self.center_x_text(f"Error while loading logo: {logoPath}", 5, 25, self.color(255, 0, 0), 0xFFFF)
-
-            
-            startTime = time.time_ns()
 
 
             self.draw_battery_statistics(5, 170,theme.text_color,theme.primary_color,theme.secondary_color,theme.text_color)
@@ -169,10 +167,10 @@ class Menus(Toolset):
                 buttonY.state = 0
                 buttonY.draw()
 
-            renderEndTime = time.time_ns()
+            renderEndTime = time.ticks_us()
 
             LCD.show()
-            showEndTime = time.time_ns()
+            showEndTime = time.ticks_us()
 
 
             if selection >= 0:
