@@ -36,7 +36,7 @@ class Main(Menus):
 
             self.LCD.blit_image_file("assets/logo 240x123.bin", 0, 58, 240, 123, 1000)
 
-            self.LCD.show(minimumFrameTime_ms=2000, screenshot=True)
+            self.LCD.show(minimumFrameTime_ms=2000)
 
         self.main_loop()
 
@@ -65,7 +65,7 @@ class Main(Menus):
                 # Settings
                 choice = 0
                 while True:
-                    options = ["Brightness", "Main menu"]
+                    options = ["Brightness", "Toggle\nstreaming", "Main menu"]
                     center = [175, 120]
                     self.LCD.WasPressed.clear_queue()
                     choice = self.vertical_scrolling_menu("Settings", options, choice, center, [True])
@@ -78,8 +78,14 @@ class Main(Menus):
                             choice = 0
                         elif choice > len(options)-1:
                             choice = len(options)-1
-                        
+                    
                     elif choice == 1:
+                        if self.LCD.enableUSBstreaming:
+                            self.LCD.enableUSBstreaming = False
+                        else:
+                            self.LCD.enableUSBstreaming = True
+
+                    elif choice == 2:
                         # Return to main menu
                         break
 

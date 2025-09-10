@@ -5,6 +5,7 @@ import os
 import gc
 from drivers.sdcard_driver import SDCard
 import deflate
+import sys
 
 
 # Display pins
@@ -179,6 +180,8 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.SDavailable = self.check_SD_availability()
 
+        self.enableUSBstreaming = False
+
 
     def init_SD(self):
         """ Returns an initialized SDCard object. """
@@ -338,6 +341,29 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.spi.write(self.buffer)
         self.cs(1)
 
+        if self.enableUSBstreaming:
+            packetCount = 16
+
+            packetNumber = 0
+
+            command = sys.stdin.readline().strip()
+            if command == "ready":
+                sys.stdin.buffer.write(bytearray(2))
+                while packetNumber < packetCount:
+                    command = sys.stdin.readline().strip()
+                    if command == "ready":
+                        pass
+                    elif command == "continue":
+                        sys.stdout.buffer.write(self.buffer[packetNumber*self.width*self.height*2//packetCount:packetNumber*self.width*self.height*2//packetCount+self.width*self.height*2//packetCount])
+                        packetNumber += 1
+                    elif command == "retry":
+                        sys.stdout.buffer.write(self.buffer[packetNumber*self.width*self.height*2//packetCount:packetNumber*self.width*self.height*2//packetCount+self.width*self.height*2//packetCount])
+                    
+            while not sys.stdin.readline().strip() == "end":
+                time.sleep_ms(1)
+
+        time.sleep_ms(1)
+
         if screenshot:
             self.screenshot("screenshot")
         if self.enableRecording:
@@ -400,7 +426,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
             screenshotName = "0"*(4-len(str(prefix))) + str(prefix) + fileName + fileFormat
         
         screenshotPath = targetFolder + "/" + screenshotName
-        print(f"Saving: {screenshotPath}")
+        # print(f"Saving: {screenshotPath}")
 
         with open(screenshotPath, 'xb') as f:
             if self.enableRecordingCompression:
@@ -476,7 +502,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
                 return
         
         framePath = targetFolder + self.currentRecordingFolder + "/" + "0"*(4-len(str(self.currentFrameID))) + str(self.currentFrameID) + fileFormat
-        print(f"Saving: {framePath}")
+        # print(f"Saving: {framePath}")
 
         with open(framePath, 'xb') as f:
             if self.enableRecordingCompression:
@@ -512,44 +538,53 @@ class LCD_1inch3(framebuf.FrameBuffer):
             filePath (str): binary image file encoded in the RGB565 format.
             x (int): x coordinate of the image
             y (int): y coordinate of the image
-            width (int): width of the image
-            height (int): height of the image
+            width (int): width of the image (only used as fallback if the image header data does not contain this)
+            height (int): height of the image (only used as fallback if the image header data does not contain this)
             memLimit (int): maximum amount of bytes of memory used to load the image
         """
-        # Skip the head data of the image if it is present 
-        try:     
-            fileSize = os.stat(filePath)[6]
-        except OSError:
-            self.fill_rect(x, y, width, height, self.color(255, 0, 0))
-            self.text("Image not found:", x, y, 0x0000)
-            self.text(filePath, x, y+8, 0x0000)
-            return
+        if filePath.endswith(".binFrame"):
+            pass
+            # TODO implement this format
+        elif filePath.endswith(".bin"):
+            # Skip the head data of the image if it is present 
+            try:     
+                fileSize = os.stat(filePath)[6]
+            except OSError:
+                self.fill_rect(x, y, width, height, self.color(255, 0, 0))
+                self.text("Image not found:", x, y, 0x0000)
+                self.text(filePath, x, y+8, 0x0000)
+                return
 
 
-        if fileSize == ((width*height*2)+8):
-            blockOffset = 8
-        else:
-            blockOffset = 0
-        
-        blockSize = max(width, (memLimit//(width*2))*width)
-        blockCount = fileSize//(blockSize*2) + min(1, (fileSize-blockOffset)%(blockSize*2))
-        # *2 is in the calculation, because each pixel occupies two bytes
-
-        with open(filePath, "rb") as imageFile:
-            if blockOffset > 0:
-                imageFile.seek(blockOffset)
+            if fileSize == ((width*height*2)+8):
+                blockOffset = 8
+            else:
+                blockOffset = 0
             
-            for block in range(blockCount):
-                if not ((block+1)*blockSize*2)>(fileSize-blockOffset):
-                    imagePart = bytearray(imageFile.read(int(blockSize*2)))
-                    self.blit(framebuf.FrameBuffer(imagePart, width, blockSize//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
-                else:
-                    imagePartSize = (fileSize-blockOffset) - blockSize*2*block
-                    imagePart = bytearray(imageFile.read(imagePartSize))
-                    self.blit(framebuf.FrameBuffer(imagePart, width, imagePartSize//2//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
-              
+            blockSize = max(width, (memLimit//(width*2))*width)
+            blockCount = fileSize//(blockSize*2) + min(1, (fileSize-blockOffset)%(blockSize*2))
+            # *2 is in the calculation, because each pixel occupies two bytes
 
-            imageFile.close()
+            with open(filePath, "rb") as imageFile:
+                if blockOffset > 0:
+                    imageFile.seek(blockOffset)
+                
+                for block in range(blockCount):
+                    if not ((block+1)*blockSize*2)>(fileSize-blockOffset):
+                        imagePart = bytearray(imageFile.read(int(blockSize*2)))
+                        self.blit(framebuf.FrameBuffer(imagePart, width, blockSize//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
+                    else:
+                        imagePartSize = (fileSize-blockOffset) - blockSize*2*block
+                        imagePart = bytearray(imageFile.read(imagePartSize))
+                        self.blit(framebuf.FrameBuffer(imagePart, width, imagePartSize//2//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
+                
+
+                imageFile.close()
+
+        else:
+            raise ValueError(f"{filePath.split(".")[-1]} is an unsupported file format!")
+        
+
 
 
     @staticmethod
