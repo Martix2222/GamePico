@@ -84,7 +84,7 @@ class Menus(Toolset):
                 # Show logo if specified
                 if not logoPath == "":
                     try:
-                        LCD.blit_image_file(logoPath, logoPos[0], logoPos[1], logoDim[0], logoDim[1])
+                        LCD.blit_image_from_file(logoPath, (logoPos[0], logoPos[1]), (logoDim[0], logoDim[1]))
                     except:
                         self.center_x_text(f"Error while loading logo: {logoPath}", 5, 25, self.color(255, 0, 0), 0xFFFF)
 

@@ -7,6 +7,9 @@ color = LCD_1inch3.color
 class Default_theme():
     def __init__(self):
         self.primary_color = color(255, 0, 0)
+
+        self.transparent_color = color(24, 128, 24)
+
         self.secondary_color = color(90, 90, 90)
         self.background_color = color(255, 255, 255)
         self.secondary_background_color = color(200, 200, 200)

@@ -18,7 +18,7 @@ class Asset():
             LCD (displayClass): The object of the display driver with a frame buffer to which the asset is drawn.
             theme (themeClass): The global theme used especially for the transparent color parameter.
             assetPath (str): The path to a .binFrame image that contains all the states of the asset in a left-to-right sequence.
-            singleStateDimensions (tuple[int, int]): The dimensions in a *(width, height)* format of a single state of the asset.
+            singleStateDimensions (tuple[int, int]): The dimensions in a *(width, height)* format of a single state and variation of the asset.
                 This also dictates the final size of the asset that is drawn on the screen.
             position (tuple[int, int]): The position where the asset will be drawn by calling the *Asset.draw()* function.
                 (This is also subsequently saved and can be changed by accessing the *Asset.position* variable.)
@@ -27,8 +27,38 @@ class Asset():
         self.LCD = LCD
         self.position = position
 
-        self.filePath = assetPath
+        self.transparentColor = theme.transparent_color
 
-        self.dimensions = singleStateDimensions
+        self.filePath:str = assetPath
 
-        self.stateCount = 0
+        self.dimensions:tuple[int, int] = singleStateDimensions
+
+        self.header = self.LCD.read_binFrame_header(assetPath)
+
+        self.calculate_states()
+        self.state:int = 0
+        self.variation:int = 0
+
+
+    def calculate_states(self):
+        # Calculate the number of states along the horizontal axis
+        self.stateCount = self.header["width"]//self.dimensions[0]
+
+        # Calculate the number of variations along the vertical axis
+        self.variationCount = self.header["width"]//self.dimensions[0]
+
+
+    def draw_asset(self, memLimit:int=1000):
+        """ Draws the asset to the image buffer. """
+        if self.state >= self.stateCount:
+            raise ValueError("The state parameter must not exceed the number of states of the asset")
+        if self.state >= self.stateCount:
+            raise ValueError("The variation parameter must not exceed the number of variations of the asset")
+
+        x = self.dimensions[0]*self.state
+        y = self.dimensions[0]*self.variation
+        
+        self.LCD.blit_image_from_file(self.filePath, self.position, self.dimensions, (x, y), memLimit, self.transparentColor)
+
+
+            

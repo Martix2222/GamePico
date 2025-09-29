@@ -34,7 +34,7 @@ class Main(Menus):
         if showSplash:
             self.LCD.fill(0xffff)
 
-            self.LCD.blit_image_file("assets/logo 240x123.bin", 0, 58, 240, 123, 1000)
+            self.LCD.blit_image_from_file("assets/logo 240x123.bin", (0, 58), (240, 123))
 
             self.LCD.show(minimumFrameTime_ms=2000)
 
@@ -106,7 +106,7 @@ if __name__=='__main__':
     MainMenu.start()
 
     MainMenu.LCD.fill(0xffff)
-    MainMenu.LCD.blit_image_file("assets/logo 240x123.bin", 0, 58, 240, 123, 1000)
+    MainMenu.LCD.blit_image_from_file("assets/logo 240x123.bin", (0, 58), (240, 123))
     MainMenu.LCD.show()
     MainMenu.LCD.enableRecording = False
     MainMenu.LCD.show()
