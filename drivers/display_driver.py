@@ -34,6 +34,7 @@ left = Pin(16,Pin.IN,Pin.PULL_UP)
 right = Pin(20,Pin.IN,Pin.PULL_UP)
 ctrl = Pin(3,Pin.IN,Pin.PULL_UP)
 
+
 class Was_Pressed():
     def __init__(self):
         self.registeredPresses = {}
@@ -376,7 +377,8 @@ class LCD_1inch3(framebuf.FrameBuffer):
         self.lastFrameTime = time.ticks_us()
 
 
-    def create_binFrame_header(self, width:int, height:int, id:int, frameTime:int, gzip:bool, gzipWbits:int=0):
+    @staticmethod
+    def create_binFrame_header(width:int, height:int, id:int, frameTime:int, gzip:bool, gzipWbits:int=0):
         # The currently implemented binFrame version is V1
         version:int = 1
 
@@ -528,25 +530,83 @@ class LCD_1inch3(framebuf.FrameBuffer):
 
         self.currentFrameID += 1
 
+
+    def read_binFrame_header(self, path) -> dict:
+        with open(path, 'rb') as f:
+            if int.from_bytes(f.read(2), "big", signed=False) == 1:
+                headerData = {}
+                headerData["version"] = 1
+                headerData["headerLength"] = 32
+                headerData["width"] = int.from_bytes(f.read(4), "big", signed=False)
+                headerData["height"] = int.from_bytes(f.read(4), "big", signed=False)
+                headerData["id"] = int.from_bytes(f.read(4), "big", signed=False)
+                headerData["frameTime"] = int.from_bytes(f.read(4), "big", signed=False)
+                flagByte = f.read(1)
+                headerData["gzip"] = self.is_bit_set(int.from_bytes(flagByte, "big", signed=False), 0)
+                headerData["gzip_wbits"] = int.from_bytes(f.read(1), "big", signed=False)
+                f.close()
+                return headerData
+            else:
+                f.close()
+                raise ValueError("Unsupported file version")
     
-    def blit_image_file(self, filePath:str, x:int, y:int, width:int, height:int, memLimit:int = 1000):
+    
+    @staticmethod
+    def is_bit_set(byte: int, bitIndex: int) -> bool:
+        return (byte >> bitIndex) & 1 == 1
+
+    
+    def blit_image_from_file(self, filePath:str, position:tuple[int, int], dimensions:tuple[int, int]=(0, 0), startingPositionInFile:tuple[int, int]=(0, 0), memLimit:int = 1000):
         """ 
         This function was added in order to solve problems with insufficient free memory space while loading big images from files.\n
         It blits an image to the image buffer while it limits memory usage according to the *memLimit* argument.
         Only if it is set too low, it loads the image at least one line of pixels at a time.
         Arguments:
             filePath (str): binary image file encoded in the RGB565 format.
-            x (int): x coordinate of the image
-            y (int): y coordinate of the image
-            width (int): width of the image (only used as fallback if the image header data does not contain this)
-            height (int): height of the image (only used as fallback if the image header data does not contain this)
-            memLimit (int): maximum amount of bytes of memory used to load the image
+            position (tuple[int, int]): The position where the image should be drawn on the display.
+            dimensions (tuple[int, int]): The dimensions of the image that is drawn on the display.\n
+                (Takes priority over the dimensions that may be saved in the .binFrame file, in case it is an asset that contains multiple images as states.)
+            startingPositionInFile (tuple[int, int]): In case the file contains a bigger image than is specified by the dimensions parameter,
+                this parameter can specify the position of the cutout of the image that will be drawn from the file.
+            memLimit (int): Maximum amount of bytes of memory that can be used to draw the image.
         """
+
+        assert startingPositionInFile[0] >= 0 and startingPositionInFile[1] >= 0 and dimensions[0] >= 0 and dimensions[1] >= 0
+
         if filePath.endswith(".binFrame"):
-            pass
-            # TODO implement this format
+            header = self.read_binFrame_header(filePath)
+
+            if dimensions == (0, 0):
+                dimensions = (header["width"], header["height"])
+
+            width, height = dimensions
+
+            chunkSize = max(width, (memLimit//(width*2))*width) # in pixels
+            chunkCount = (width*height)//(chunkSize) + (width*height)%(chunkSize)
+            # *2 is in the calculation, because each pixel occupies two bytes
+
+            with open(filePath, "rb") as imageFile:
+                imageFile.seek(header["headerLength"])
+                imageFile.seek(startingPositionInFile[0]*2+startingPositionInFile[1]*header["width"]*2)
+
+                for chunk in range(chunkCount):
+                    imageChunk = bytearray()
+                    if width*height*2 >= chunk*width*2:
+                        for i in range(chunkSize//width):
+                            imageChunk += bytearray(imageFile.read(int(chunkSize*2)))
+                            imageFile.seek(header["width"]*2)
+
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, chunkSize//width, framebuf.RGB565), position[0], position[1]+(chunk*(chunkSize//width)))
+                    else:
+                        for i in range(((width*height*2 - chunk*width*2))//width):
+                            imageChunk = bytearray(imageFile.read(int(chunkSize*2)))
+                            imageFile.seek(header["width"]*2)
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, (len(imageChunk)//2)//width, framebuf.RGB565), position[0], position[1]+(chunk*(chunkSize//width)))           
+            
         elif filePath.endswith(".bin"):
-            # Skip the head data of the image if it is present 
+            width, height = dimensions
+            x, y = position
+
             try:     
                 fileSize = os.stat(filePath)[6]
             except OSError:
@@ -555,28 +615,28 @@ class LCD_1inch3(framebuf.FrameBuffer):
                 self.text(filePath, x, y+8, 0x0000)
                 return
 
-
+            # Skip the head data of the image if it is present
             if fileSize == ((width*height*2)+8):
                 blockOffset = 8
             else:
                 blockOffset = 0
             
-            blockSize = max(width, (memLimit//(width*2))*width)
-            blockCount = fileSize//(blockSize*2) + min(1, (fileSize-blockOffset)%(blockSize*2))
+            chunkSize = max(width, (memLimit//(width*2))*width)
+            chunkCount = fileSize//(chunkSize*2) + min(1, (fileSize-blockOffset)%(chunkSize*2))
             # *2 is in the calculation, because each pixel occupies two bytes
 
             with open(filePath, "rb") as imageFile:
                 if blockOffset > 0:
                     imageFile.seek(blockOffset)
                 
-                for block in range(blockCount):
-                    if not ((block+1)*blockSize*2)>(fileSize-blockOffset):
-                        imagePart = bytearray(imageFile.read(int(blockSize*2)))
-                        self.blit(framebuf.FrameBuffer(imagePart, width, blockSize//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
+                for chunk in range(chunkCount):
+                    if not ((chunk+1)*chunkSize*2)>(fileSize-blockOffset):
+                        imageChunk = bytearray(imageFile.read(int(chunkSize*2)))
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, chunkSize//width, framebuf.RGB565), x, y+(chunk*(chunkSize//width)))
                     else:
-                        imagePartSize = (fileSize-blockOffset) - blockSize*2*block
-                        imagePart = bytearray(imageFile.read(imagePartSize))
-                        self.blit(framebuf.FrameBuffer(imagePart, width, imagePartSize//2//width, framebuf.RGB565), x, y+(block*(blockSize//width)))
+                        imagePartSize = (fileSize-blockOffset) - chunkSize*2*chunk
+                        imageChunk = bytearray(imageFile.read(imagePartSize))
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, imagePartSize//2//width, framebuf.RGB565), x, y+(chunk*(chunkSize//width)))
                 
 
                 imageFile.close()
