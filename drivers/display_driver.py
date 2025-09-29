@@ -556,7 +556,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
         return (byte >> bitIndex) & 1 == 1
 
     
-    def blit_image_from_file(self, filePath:str, position:tuple[int, int], dimensions:tuple[int, int]=(0, 0), startingPositionInFile:tuple[int, int]=(0, 0), memLimit:int = 1000):
+    def blit_image_from_file(self, filePath:str, position:tuple[int, int], dimensions:tuple[int, int]=(0, 0), startingPositionInFile:tuple[int, int]=(0, 0), memLimit:int=1000, key:int=-1):
         """ 
         This function was added in order to solve problems with insufficient free memory space while loading big images from files.\n
         It blits an image to the image buffer while it limits memory usage according to the *memLimit* argument.
@@ -569,6 +569,7 @@ class LCD_1inch3(framebuf.FrameBuffer):
             startingPositionInFile (tuple[int, int]): In case the file contains a bigger image than is specified by the dimensions parameter,
                 this parameter can specify the position of the cutout of the image that will be drawn from the file.
             memLimit (int): Maximum amount of bytes of memory that can be used to draw the image.
+            key (int): The color that will be considered transparent.
         """
 
         assert startingPositionInFile[0] >= 0 and startingPositionInFile[1] >= 0 and dimensions[0] >= 0 and dimensions[1] >= 0
@@ -596,12 +597,12 @@ class LCD_1inch3(framebuf.FrameBuffer):
                             imageChunk += bytearray(imageFile.read(int(chunkSize*2)))
                             imageFile.seek(header["width"]*2)
 
-                        self.blit(framebuf.FrameBuffer(imageChunk, width, chunkSize//width, framebuf.RGB565), position[0], position[1]+(chunk*(chunkSize//width)))
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, chunkSize//width, framebuf.RGB565), position[0], position[1]+(chunk*(chunkSize//width)), key)
                     else:
                         for i in range(((width*height*2 - chunk*width*2))//width):
                             imageChunk = bytearray(imageFile.read(int(chunkSize*2)))
                             imageFile.seek(header["width"]*2)
-                        self.blit(framebuf.FrameBuffer(imageChunk, width, (len(imageChunk)//2)//width, framebuf.RGB565), position[0], position[1]+(chunk*(chunkSize//width)))           
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, (len(imageChunk)//2)//width, framebuf.RGB565), position[0], position[1]+(chunk*(chunkSize//width)), key)           
             
         elif filePath.endswith(".bin"):
             width, height = dimensions
@@ -632,11 +633,11 @@ class LCD_1inch3(framebuf.FrameBuffer):
                 for chunk in range(chunkCount):
                     if not ((chunk+1)*chunkSize*2)>(fileSize-blockOffset):
                         imageChunk = bytearray(imageFile.read(int(chunkSize*2)))
-                        self.blit(framebuf.FrameBuffer(imageChunk, width, chunkSize//width, framebuf.RGB565), x, y+(chunk*(chunkSize//width)))
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, chunkSize//width, framebuf.RGB565), x, y+(chunk*(chunkSize//width)), key)
                     else:
                         imagePartSize = (fileSize-blockOffset) - chunkSize*2*chunk
                         imageChunk = bytearray(imageFile.read(imagePartSize))
-                        self.blit(framebuf.FrameBuffer(imageChunk, width, imagePartSize//2//width, framebuf.RGB565), x, y+(chunk*(chunkSize//width)))
+                        self.blit(framebuf.FrameBuffer(imageChunk, width, imagePartSize//2//width, framebuf.RGB565), x, y+(chunk*(chunkSize//width)), key)
                 
 
                 imageFile.close()
